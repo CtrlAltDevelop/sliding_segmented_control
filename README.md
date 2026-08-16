@@ -8,7 +8,13 @@ It has **no dependency on your app's theme, assets or localisations**: colours,
 shapes and metrics come from a `ThemeExtension` you register, and with none
 registered it derives a palette from the ambient `ColorScheme`.
 
+![Changing tabs: the pill slides while the body slides in behind it](screenshots/tabs.gif)
+
+The control in three styles — default, with icons, and with a solid indicator:
+
 ![The control in three styles](screenshots/control.png)
+
+And a `SegmentedBody`, the control above the body of the selected segment:
 
 ![A SegmentedBody](screenshots/body.png)
 
@@ -210,6 +216,13 @@ A runnable demo of every style, including the RTL toggle, is in
 
 ```bash
 cd example && flutter run
+```
+
+The images in this README are rendered from the real widgets, so they can be
+regenerated whenever the control changes:
+
+```bash
+cd example && flutter test --update-goldens test/screenshots_test.dart && flutter test tool/record_tab_gif.dart
 ```
 
 ## Licence
