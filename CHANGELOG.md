@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.1.1
+
+- Dropped the `figma_squircle` dependency: the package now needs nothing but
+  Flutter. Corners are drawn by `RoundedSuperellipseBorder`, in the framework
+  since Flutter 3.32, which the engine rasterises directly.
+- Corner radii are settable from the call site. `trackRadius` and
+  `indicatorRadius` take any `BorderRadiusGeometry` — one radius, a different
+  radius per corner, elliptical corners, or the directional
+  `BorderRadiusDirectional` — on the theme or per instance.
+- `trackShape` / `indicatorShape` take a whole `ShapeBorder`, also per
+  instance, so a host can bring corner geometry this package does not ship —
+  a `figma_squircle` squircle, for instance — and keep that dependency in its
+  own pubspec.
+- `cornerSmoothing`, a `figma_squircle` notion, gives way to the
+  `smoothCorners` flag.
+- The Flutter floor moves to 3.32.0 for `RoundedSuperellipseBorder`.
+
 ## 0.1.0
 
 - First release.
@@ -15,14 +32,6 @@
 - `SegmentedControlTheme`, a `ThemeExtension` covering colours, text styles,
   shapes and metrics, with `copyWith` and `lerp`. With none registered, the
   palette is derived from the ambient `ColorScheme`.
-- Corner radii accept any `BorderRadiusGeometry`, per corner, elliptical or
-  directional, on the theme or per instance. Corners are smoothed into
-  squircles by Flutter's own `RoundedSuperellipseBorder`; `smoothCorners:
-  false` gives plain circular ones.
-- `trackShape` / `indicatorShape` take a whole `ShapeBorder`, on the theme or
-  per instance, so a host can bring corner geometry this package does not ship
-  — `figma_squircle`, for instance — without the dependency landing here.
-- No package dependencies: the widgets need nothing but Flutter itself.
 - Right-to-left is handled by positioning the indicator with
   `AlignmentDirectional`.
 - Segments are exposed to screen readers as buttons carrying their selected and

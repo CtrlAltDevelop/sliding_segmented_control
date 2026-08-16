@@ -29,7 +29,7 @@ Or add it to `pubspec.yaml` yourself — it is a runtime dependency:
 
 ```yaml
 dependencies:
-  sliding_segmented_control: ^0.1.0
+  sliding_segmented_control: ^0.1.1
 ```
 
 then:

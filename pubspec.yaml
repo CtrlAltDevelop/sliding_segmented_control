@@ -2,7 +2,7 @@ name: sliding_segmented_control
 description: >-
   A themeable segmented control whose selection is marked by a pill sliding
   between segments, with an optional body that cross-fades underneath it.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/CtrlAltDevelop
 repository: https://github.com/CtrlAltDevelop/sliding_segmented_control
 issue_tracker: https://github.com/CtrlAltDevelop/sliding_segmented_control/issues
