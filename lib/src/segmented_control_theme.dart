@@ -1,4 +1,3 @@
-import 'package:figma_squircle/figma_squircle.dart';
 import 'package:flutter/material.dart';
 
 /// Everything a [SlidingSegmentedControl] needs to paint itself.
@@ -33,7 +32,7 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
     this.indicatorRadius = const BorderRadius.all(Radius.circular(4)),
     this.trackShape,
     this.indicatorShape,
-    this.cornerSmoothing = 1,
+    this.smoothCorners = true,
     this.trackPadding = const EdgeInsets.all(4),
     this.height = 44,
     this.iconSize = 14,
@@ -78,22 +77,30 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
   final double borderWidth;
 
   /// Corner radii of the track. Ignored when [trackShape] is set.
-  final BorderRadius trackRadius;
+  ///
+  /// Any [BorderRadiusGeometry] works: one radius for all four corners, a
+  /// different radius per corner, elliptical corners, or the directional
+  /// [BorderRadiusDirectional], which follows the text direction.
+  final BorderRadiusGeometry trackRadius;
 
-  /// Corner radii of the indicator. Ignored when [indicatorShape] is set.
-  final BorderRadius indicatorRadius;
+  /// Corner radii of the indicator, on the same terms as [trackRadius].
+  /// Ignored when [indicatorShape] is set.
+  final BorderRadiusGeometry indicatorRadius;
 
   /// Shape of the track. Overrides [trackRadius] and [borderColor] when set;
-  /// defaults to an outlined squircle of [trackRadius].
+  /// defaults to an outlined rounded rectangle of [trackRadius].
   final ShapeBorder? trackShape;
 
   /// Shape of the indicator. Overrides [indicatorRadius] when set; defaults to
-  /// a squircle of [indicatorRadius].
+  /// a rounded rectangle of [indicatorRadius].
   final ShapeBorder? indicatorShape;
 
-  /// Corner smoothing of the default squircle shapes, from `0` (a plain
-  /// rounded rectangle) to `1` (a full iOS-style squircle).
-  final double cornerSmoothing;
+  /// Whether the default shapes round their corners as a superellipse — the
+  /// smoothed, iOS-style squircle — rather than as a plain circular arc.
+  ///
+  /// Drawn by the engine through [RoundedSuperellipseBorder], so it costs no
+  /// more than an ordinary [RoundedRectangleBorder].
+  final bool smoothCorners;
 
   /// Inset between the track edge and the segments.
   final EdgeInsetsGeometry trackPadding;
@@ -127,44 +134,33 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
         unselectedLabelColor: scheme.onSurfaceVariant,
       );
 
-  /// The track shape, defaulting to an outlined squircle of [trackRadius].
+  /// The track shape, defaulting to an outlined rectangle of [trackRadius].
   ShapeBorder get resolvedTrackShape =>
       trackShape ??
-      SmoothRectangleBorder(
+      shapeFor(
+        trackRadius,
         side: borderWidth > 0
             ? BorderSide(width: borderWidth, color: borderColor)
             : BorderSide.none,
-        borderRadius: smooth(trackRadius, cornerSmoothing),
       );
 
-  /// The indicator shape, defaulting to a squircle of [indicatorRadius].
+  /// The indicator shape, defaulting to a rectangle of [indicatorRadius].
   ShapeBorder get resolvedIndicatorShape =>
-      indicatorShape ??
-      SmoothRectangleBorder(
-        borderRadius: smooth(indicatorRadius, cornerSmoothing),
-      );
+      indicatorShape ?? shapeFor(indicatorRadius);
 
-  /// Squircles the corners of [radius] — what gives the track and indicator
-  /// their smoothed, non-circular corners.
-  static SmoothBorderRadius smooth(BorderRadius radius, double smoothing) =>
-      SmoothBorderRadius.only(
-        topLeft: SmoothRadius(
-          cornerRadius: radius.topLeft.x,
-          cornerSmoothing: smoothing,
-        ),
-        topRight: SmoothRadius(
-          cornerRadius: radius.topRight.x,
-          cornerSmoothing: smoothing,
-        ),
-        bottomLeft: SmoothRadius(
-          cornerRadius: radius.bottomLeft.x,
-          cornerSmoothing: smoothing,
-        ),
-        bottomRight: SmoothRadius(
-          cornerRadius: radius.bottomRight.x,
-          cornerSmoothing: smoothing,
-        ),
-      );
+  /// A rectangle with [radius] corners, smoothed into a superellipse when
+  /// [smoothCorners] is set.
+  ///
+  /// Both shapes take a [BorderRadiusGeometry], so any radius the framework
+  /// can express is drawn as given — including [BorderRadiusDirectional],
+  /// which the shape resolves against the ambient text direction.
+  OutlinedBorder shapeFor(
+    BorderRadiusGeometry radius, {
+    BorderSide side = BorderSide.none,
+  }) =>
+      smoothCorners
+          ? RoundedSuperellipseBorder(side: side, borderRadius: radius)
+          : RoundedRectangleBorder(side: side, borderRadius: radius);
 
   /// The style for a segment's label, with this theme's colour and family
   /// filled in wherever the host left them unset.
@@ -201,11 +197,11 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
     TextStyle? selectedLabelStyle,
     String? fontFamily,
     double? borderWidth,
-    BorderRadius? trackRadius,
-    BorderRadius? indicatorRadius,
+    BorderRadiusGeometry? trackRadius,
+    BorderRadiusGeometry? indicatorRadius,
     ShapeBorder? trackShape,
     ShapeBorder? indicatorShape,
-    double? cornerSmoothing,
+    bool? smoothCorners,
     EdgeInsetsGeometry? trackPadding,
     double? height,
     double? iconSize,
@@ -227,7 +223,7 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
         indicatorRadius: indicatorRadius ?? this.indicatorRadius,
         trackShape: trackShape ?? this.trackShape,
         indicatorShape: indicatorShape ?? this.indicatorShape,
-        cornerSmoothing: cornerSmoothing ?? this.cornerSmoothing,
+        smoothCorners: smoothCorners ?? this.smoothCorners,
         trackPadding: trackPadding ?? this.trackPadding,
         height: height ?? this.height,
         iconSize: iconSize ?? this.iconSize,
@@ -257,13 +253,17 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
       fontFamily: t < 0.5 ? fontFamily : other.fontFamily,
       borderWidth: lerpDouble(borderWidth, other.borderWidth, t),
       trackRadius:
-          BorderRadius.lerp(trackRadius, other.trackRadius, t) ?? trackRadius,
-      indicatorRadius:
-          BorderRadius.lerp(indicatorRadius, other.indicatorRadius, t) ??
-              indicatorRadius,
+          BorderRadiusGeometry.lerp(trackRadius, other.trackRadius, t) ??
+              trackRadius,
+      indicatorRadius: BorderRadiusGeometry.lerp(
+            indicatorRadius,
+            other.indicatorRadius,
+            t,
+          ) ??
+          indicatorRadius,
       trackShape: t < 0.5 ? trackShape : other.trackShape,
       indicatorShape: t < 0.5 ? indicatorShape : other.indicatorShape,
-      cornerSmoothing: lerpDouble(cornerSmoothing, other.cornerSmoothing, t),
+      smoothCorners: t < 0.5 ? smoothCorners : other.smoothCorners,
       trackPadding:
           EdgeInsetsGeometry.lerp(trackPadding, other.trackPadding, t) ??
               trackPadding,

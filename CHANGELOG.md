@@ -13,8 +13,16 @@
   body change, with `transitionBuilder` still there for anything else. `slide`
   follows the direction the selection moved in, and mirrors under RTL.
 - `SegmentedControlTheme`, a `ThemeExtension` covering colours, text styles,
-  shapes, corner smoothing and metrics, with `copyWith` and `lerp`. With none
-  registered, the palette is derived from the ambient `ColorScheme`.
+  shapes and metrics, with `copyWith` and `lerp`. With none registered, the
+  palette is derived from the ambient `ColorScheme`.
+- Corner radii accept any `BorderRadiusGeometry`, per corner, elliptical or
+  directional, on the theme or per instance. Corners are smoothed into
+  squircles by Flutter's own `RoundedSuperellipseBorder`; `smoothCorners:
+  false` gives plain circular ones.
+- `trackShape` / `indicatorShape` take a whole `ShapeBorder`, on the theme or
+  per instance, so a host can bring corner geometry this package does not ship
+  — `figma_squircle`, for instance — without the dependency landing here.
+- No package dependencies: the widgets need nothing but Flutter itself.
 - Right-to-left is handled by positioning the indicator with
   `AlignmentDirectional`.
 - Segments are exposed to screen readers as buttons carrying their selected and

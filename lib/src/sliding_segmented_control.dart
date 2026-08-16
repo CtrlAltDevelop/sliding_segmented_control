@@ -34,6 +34,10 @@ class SlidingSegmentedControl extends StatelessWidget {
     this.curve = Curves.easeInOut,
     this.height,
     this.padding,
+    this.trackRadius,
+    this.indicatorRadius,
+    this.trackShape,
+    this.indicatorShape,
     this.labelStyle,
     this.selectedLabelStyle,
     this.trackColor,
@@ -72,6 +76,24 @@ class SlidingSegmentedControl extends StatelessWidget {
   /// Overrides [SegmentedControlTheme.trackPadding].
   final EdgeInsetsGeometry? padding;
 
+  /// Overrides [SegmentedControlTheme.trackRadius]. Any
+  /// [BorderRadiusGeometry] works, [BorderRadiusDirectional] included.
+  final BorderRadiusGeometry? trackRadius;
+
+  /// Overrides [SegmentedControlTheme.indicatorRadius], on the same terms.
+  final BorderRadiusGeometry? indicatorRadius;
+
+  /// Overrides [SegmentedControlTheme.trackShape], and with it [trackRadius].
+  ///
+  /// Any [ShapeBorder] at all, which is how a host brings its own corner
+  /// geometry — a `StadiumBorder`, or a squircle from a package such as
+  /// `figma_squircle` — without this package depending on it.
+  final ShapeBorder? trackShape;
+
+  /// Overrides [SegmentedControlTheme.indicatorShape], and with it
+  /// [indicatorRadius]. Any [ShapeBorder], as for [trackShape].
+  final ShapeBorder? indicatorShape;
+
   /// Overrides [SegmentedControlTheme.labelStyle].
   final TextStyle? labelStyle;
 
@@ -98,6 +120,10 @@ class SlidingSegmentedControl extends StatelessWidget {
       SegmentedControlTheme.of(context).copyWith(
         height: height,
         trackPadding: padding,
+        trackRadius: trackRadius,
+        indicatorRadius: indicatorRadius,
+        trackShape: trackShape,
+        indicatorShape: indicatorShape,
         labelStyle: labelStyle,
         selectedLabelStyle: selectedLabelStyle,
         trackColor: trackColor,

@@ -4,9 +4,10 @@ A segmented control whose selection is marked by a **pill that slides** between
 segments, rather than by a highlighted button — plus `SegmentedBody`, which
 pairs the control with a body that cross-fades as the pill moves.
 
-It has **no dependency on your app's theme, assets or localisations**: colours,
-shapes and metrics come from a `ThemeExtension` you register, and with none
-registered it derives a palette from the ambient `ColorScheme`.
+It has **no dependencies at all** — not on your app's theme, assets or
+localisations, and none on pub.dev. Colours, shapes and metrics come from a
+`ThemeExtension` you register, and with none registered it derives a palette
+from the ambient `ColorScheme`.
 
 ![Changing tabs: the pill slides while the body slides in behind it](screenshots/tabs.gif)
 
@@ -80,6 +81,8 @@ instead.
 | `curve` | `easeInOut` | The curve it slides on |
 | `height` | theme | Overrides the theme's height |
 | `padding` | theme | Inset between the track edge and the segments |
+| `trackRadius` / `indicatorRadius` | theme | Per-instance corner radii |
+| `trackShape` / `indicatorShape` | theme | Per-instance `ShapeBorder`s, overriding the radii |
 | `labelStyle` / `selectedLabelStyle` | theme | Per-instance text styles |
 | `trackColor`, `indicatorColor`, `selectedLabelColor`, `unselectedLabelColor` | theme | Per-instance colours |
 | `semanticLabel` | null | Screen-reader label for the control as a whole |
@@ -170,9 +173,9 @@ over whatever the extension says.
 | `disabledLabelColor` | 38% of unselected | Label of disabled segments |
 | `labelStyle` / `selectedLabelStyle` | ambient `bodyMedium` | Text styles. What they set wins |
 | `fontFamily` | null | Swaps the typeface without touching the styles |
-| `trackRadius` / `indicatorRadius` | 8 / 4 | Corner radii |
-| `trackShape` / `indicatorShape` | squircles | Full `ShapeBorder`s, overriding the radii |
-| `cornerSmoothing` | `1` | `0` is a plain rounded rect, `1` a full squircle |
+| `trackRadius` / `indicatorRadius` | 8 / 4 | Corner radii. Any `BorderRadiusGeometry` |
+| `trackShape` / `indicatorShape` | rounded | Full `ShapeBorder`s, overriding the radii |
+| `smoothCorners` | `true` | Squircle corners, or plain circular ones |
 | `trackPadding` | `4` | Inset between the track edge and the segments |
 | `height` | `44` | Height of the whole control |
 | `iconSize` / `iconLabelSpacing` | `14` / `4` | Segment icon metrics |
@@ -184,6 +187,44 @@ indicator on a surface track — so the control is usable with no setup.
 
 `copyWith` and `lerp` are implemented, so the control animates across a theme
 change like any other `ThemeExtension`.
+
+### Corners
+
+`trackRadius` and `indicatorRadius` take **any** `BorderRadiusGeometry` — one
+radius for all four corners, a different radius per corner, elliptical corners,
+or `BorderRadiusDirectional`, which the shape resolves against the ambient text
+direction:
+
+```dart
+SlidingSegmentedControl(
+  trackRadius: const BorderRadius.only(
+    topLeft: Radius.circular(22),
+    bottomRight: Radius.elliptical(12, 6),
+  ),
+  indicatorRadius: BorderRadius.circular(18),
+  // …
+)
+```
+
+By default the corners are drawn as a superellipse — the smoothed, iOS-style
+squircle — through Flutter's own `RoundedSuperellipseBorder`, which the engine
+rasterises directly. Set `smoothCorners: false` on the theme for plain circular
+corners.
+
+For corner geometry this package does not ship, pass a whole `ShapeBorder` as
+`trackShape` / `indicatorShape`, on the theme or per instance. That is the seam
+for a `StadiumBorder`, your own `ShapeBorder`, or a squircle from a package
+such as `figma_squircle` — the shape comes from you, so the dependency stays in
+your app rather than in this one:
+
+```dart
+SlidingSegmentedControl(
+  trackShape: SmoothRectangleBorder(
+    borderRadius: SmoothBorderRadius(cornerRadius: 8, cornerSmoothing: 1),
+  ),
+  // …
+)
+```
 
 ## Right-to-left
 

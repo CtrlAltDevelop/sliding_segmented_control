@@ -413,6 +413,75 @@ void main() {
       expect(resolved.height, 44);
     });
 
+    test('smooth corners give a superellipse, plain ones a rectangle', () {
+      final base = SegmentedControlTheme.fromScheme(
+        ColorScheme.fromSeed(seedColor: const Color(0xFF3B82F6)),
+      );
+
+      expect(base.resolvedTrackShape, isA<RoundedSuperellipseBorder>());
+      expect(base.resolvedIndicatorShape, isA<RoundedSuperellipseBorder>());
+
+      final plain = base.copyWith(smoothCorners: false);
+      expect(plain.resolvedTrackShape, isA<RoundedRectangleBorder>());
+      expect(plain.resolvedIndicatorShape, isA<RoundedRectangleBorder>());
+    });
+
+    test('any BorderRadiusGeometry is carried through as given', () {
+      const perCorner = BorderRadius.only(
+        topLeft: Radius.circular(20),
+        bottomRight: Radius.elliptical(8, 4),
+      );
+      const directional = BorderRadiusDirectional.horizontal(
+        start: Radius.circular(12),
+      );
+
+      final theme = SegmentedControlTheme.fromScheme(
+        ColorScheme.fromSeed(seedColor: const Color(0xFF3B82F6)),
+      ).copyWith(trackRadius: perCorner, indicatorRadius: directional);
+
+      expect(
+        (theme.resolvedTrackShape as RoundedSuperellipseBorder).borderRadius,
+        perCorner,
+      );
+      expect(
+        (theme.resolvedIndicatorShape as RoundedSuperellipseBorder)
+            .borderRadius,
+        directional,
+      );
+    });
+
+    testWidgets('per-instance radii win over the theme', (tester) async {
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        onSegmentChanged: (_) {},
+        indicatorRadius: BorderRadius.circular(18),
+      )));
+
+      final decorated = tester.widget<DecoratedBox>(indicatorBox);
+      final shape = (decorated.decoration as ShapeDecoration).shape;
+      expect(
+        (shape as RoundedSuperellipseBorder).borderRadius,
+        BorderRadius.circular(18),
+      );
+    });
+
+    testWidgets('a per-instance shape replaces the default entirely',
+        (tester) async {
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        onSegmentChanged: (_) {},
+        indicatorShape: const StadiumBorder(),
+      )));
+
+      final decorated = tester.widget<DecoratedBox>(indicatorBox);
+      expect(
+        (decorated.decoration as ShapeDecoration).shape,
+        isA<StadiumBorder>(),
+      );
+    });
+
     test('copyWith replaces only what it is given', () {
       final base = SegmentedControlTheme.fromScheme(
         ColorScheme.fromSeed(seedColor: const Color(0xFF3B82F6)),
