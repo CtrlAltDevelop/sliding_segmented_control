@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A stand-in for a real page body, so the cross-fade has something to show.
 class DemoPanel extends StatelessWidget {

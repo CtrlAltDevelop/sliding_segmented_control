@@ -6,7 +6,7 @@
 // The images land in ../../screenshots/ and are shown in README.md.
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sliding_segmented_control/sliding_segmented_control.dart';
