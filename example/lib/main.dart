@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sliding_segmented_control/sliding_segmented_control.dart';
 
 import 'demo_theme.dart';

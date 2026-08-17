@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'segment.dart';
 import 'segmented_body_transition.dart';
@@ -183,7 +183,7 @@ class _SegmentedBodyState extends State<SegmentedBody> {
         alignment: Alignment.topCenter,
         children: [
           ...previousChildren,
-          if (currentChild != null) currentChild,
+          ?currentChild,
         ],
       ),
       child: KeyedSubtree(

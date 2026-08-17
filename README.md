@@ -4,10 +4,15 @@ A segmented control whose selection is marked by a **pill that slides** between
 segments, rather than by a highlighted button — plus `SegmentedBody`, which
 pairs the control with a body that cross-fades as the pill moves.
 
-It has **no dependencies at all** — not on your app's theme, assets or
-localisations, and none on pub.dev. Colours, shapes and metrics come from a
-`ThemeExtension` you register, and with none registered it derives a palette
-from the ambient `ColorScheme`.
+Material comes from the **`material_ui`** package rather than from
+`package:flutter/material.dart`, so your app has to be on `material_ui` too —
+its `ThemeData` and `ColorScheme` are not the framework's. Beyond that the
+control asks nothing of you: no assets, no localisations, no other pub.dev
+dependency. Colours, shapes and metrics come from a `ThemeExtension` you
+register, and with none registered it derives a palette from the ambient
+`ColorScheme`.
+
+Still on framework Material? Stay on `0.1.1`.
 
 ![Changing tabs: the pill slides while the body slides in behind it](screenshots/tabs.gif)
 
@@ -29,7 +34,8 @@ Or add it to `pubspec.yaml` yourself — it is a runtime dependency:
 
 ```yaml
 dependencies:
-  sliding_segmented_control: ^0.1.1
+  material_ui: ^1.0.0
+  sliding_segmented_control: ^1.0.0
 ```
 
 then:

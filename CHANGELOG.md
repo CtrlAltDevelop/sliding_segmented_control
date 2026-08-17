@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.0.0
+
+- **Breaking.** Material comes from the `material_ui` package, not from
+  `package:flutter/material.dart`. Every `import 'package:flutter/material.dart'`
+  is now `import 'package:material_ui/material_ui.dart'`.
+
+  The types this package exposes — `ThemeExtension`, `ThemeData`,
+  `ColorScheme`, `TextTheme` — are `material_ui`'s, and those are distinct
+  from the framework's classes of the same name. A host registering
+  `SegmentedControlTheme` as a theme extension, or reading it through
+  `SegmentedControlTheme.of`, has to be on `material_ui` too. `dart fix
+  --apply --code=migrate_design_widgets` does the import rewrite for you.
+
+  Hosts still on framework Material stay on 0.1.1.
+- The SDK floor moves to Dart 3.13.0 and Flutter 3.47.0.
+- The example's Flutter floor, left behind at 3.27.0, moves up with the
+  package.
+
 ## 0.1.1
 
 - Dropped the `figma_squircle` dependency: the package now needs nothing but
