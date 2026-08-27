@@ -34,6 +34,11 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
     this.indicatorShape,
     this.smoothCorners = true,
     this.trackPadding = const EdgeInsets.all(4),
+    this.segmentPadding = const EdgeInsets.symmetric(horizontal: 12),
+    this.hoverColor,
+    this.focusColor,
+    this.focusOutlineColor,
+    this.focusOutlineWidth = 2,
     this.height = 44,
     this.iconSize = 14,
     this.iconLabelSpacing = 4,
@@ -105,6 +110,28 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
   /// Inset between the track edge and the segments.
   final EdgeInsetsGeometry trackPadding;
 
+  /// Inset between a segment's edge and its content.
+  ///
+  /// Read by every sizing mode, but it is what gives a
+  /// [SegmentSizing.intrinsic] or [SegmentSizing.scrollable] segment its
+  /// width beyond the label itself.
+  final EdgeInsetsGeometry segmentPadding;
+
+  /// Overlay painted over a segment the pointer is over. Defaults to
+  /// [unselectedLabelColor] at 6% opacity.
+  final Color? hoverColor;
+
+  /// Overlay painted over the segment holding keyboard focus. Defaults to
+  /// [unselectedLabelColor] at 10% opacity.
+  final Color? focusColor;
+
+  /// Colour of the ring drawn around the focused segment. Defaults to
+  /// [selectedLabelColor].
+  final Color? focusOutlineColor;
+
+  /// Width of the focus ring. `0` removes it, leaving only [focusColor].
+  final double focusOutlineWidth;
+
   /// Height of the whole control, track padding included.
   final double height;
 
@@ -132,6 +159,7 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
         indicatorColor: scheme.primaryContainer,
         selectedLabelColor: scheme.onPrimaryContainer,
         unselectedLabelColor: scheme.onSurfaceVariant,
+        focusOutlineColor: scheme.primary,
       );
 
   /// The track shape, defaulting to an outlined rectangle of [trackRadius].
@@ -147,6 +175,28 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
   /// The indicator shape, defaulting to a rectangle of [indicatorRadius].
   ShapeBorder get resolvedIndicatorShape =>
       indicatorShape ?? shapeFor(indicatorRadius);
+
+  /// The overlay to paint over a segment in the given interaction state, or
+  /// null when it is neither hovered nor focused.
+  Color? overlayFor({required bool hovered, required bool focused}) {
+    if (focused) return focusColor ?? unselectedLabelColor.withValues(alpha: 0.1);
+    if (hovered) {
+      return hoverColor ?? unselectedLabelColor.withValues(alpha: 0.06);
+    }
+    return null;
+  }
+
+  /// The shape of the focus ring: the indicator's geometry, outlined.
+  ShapeBorder get resolvedFocusOutlineShape {
+    final side = BorderSide(
+      width: focusOutlineWidth,
+      color: focusOutlineColor ?? selectedLabelColor,
+    );
+    final shape = indicatorShape;
+    return shape is OutlinedBorder
+        ? shape.copyWith(side: side)
+        : shapeFor(indicatorRadius, side: side);
+  }
 
   /// A rectangle with [radius] corners, smoothed into a superellipse when
   /// [smoothCorners] is set.
@@ -203,6 +253,11 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
     ShapeBorder? indicatorShape,
     bool? smoothCorners,
     EdgeInsetsGeometry? trackPadding,
+    EdgeInsetsGeometry? segmentPadding,
+    Color? hoverColor,
+    Color? focusColor,
+    Color? focusOutlineColor,
+    double? focusOutlineWidth,
     double? height,
     double? iconSize,
     double? iconLabelSpacing,
@@ -225,6 +280,11 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
         indicatorShape: indicatorShape ?? this.indicatorShape,
         smoothCorners: smoothCorners ?? this.smoothCorners,
         trackPadding: trackPadding ?? this.trackPadding,
+        segmentPadding: segmentPadding ?? this.segmentPadding,
+        hoverColor: hoverColor ?? this.hoverColor,
+        focusColor: focusColor ?? this.focusColor,
+        focusOutlineColor: focusOutlineColor ?? this.focusOutlineColor,
+        focusOutlineWidth: focusOutlineWidth ?? this.focusOutlineWidth,
         height: height ?? this.height,
         iconSize: iconSize ?? this.iconSize,
         iconLabelSpacing: iconLabelSpacing ?? this.iconLabelSpacing,
@@ -267,6 +327,15 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
       trackPadding:
           EdgeInsetsGeometry.lerp(trackPadding, other.trackPadding, t) ??
               trackPadding,
+      segmentPadding:
+          EdgeInsetsGeometry.lerp(segmentPadding, other.segmentPadding, t) ??
+              segmentPadding,
+      hoverColor: Color.lerp(hoverColor, other.hoverColor, t),
+      focusColor: Color.lerp(focusColor, other.focusColor, t),
+      focusOutlineColor:
+          Color.lerp(focusOutlineColor, other.focusOutlineColor, t),
+      focusOutlineWidth:
+          lerpDouble(focusOutlineWidth, other.focusOutlineWidth, t),
       height: lerpDouble(height, other.height, t),
       iconSize: lerpDouble(iconSize, other.iconSize, t),
       iconLabelSpacing:

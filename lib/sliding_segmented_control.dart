@@ -16,6 +16,7 @@
 library;
 
 export 'src/segment.dart';
+export 'src/segment_sizing.dart';
 export 'src/segmented_body.dart';
 export 'src/segmented_body_transition.dart';
 export 'src/segmented_control_theme.dart';

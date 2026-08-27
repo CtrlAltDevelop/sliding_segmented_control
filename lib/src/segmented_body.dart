@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'segment.dart';
+import 'segment_sizing.dart';
 import 'segmented_body_transition.dart';
 import 'segmented_control_theme.dart';
 import 'sliding_segmented_control.dart';
@@ -36,6 +37,10 @@ class SegmentedBody extends StatefulWidget {
     this.onSegmentChanged,
     this.initialIndex = 0,
     this.enabled = true,
+    this.sizing = SegmentSizing.equal,
+    this.enableDrag = true,
+    this.enableFeedback = true,
+    this.autofocus = false,
     this.spacing = 14,
     this.controlMargin = EdgeInsets.zero,
     this.controlPadding,
@@ -71,8 +76,21 @@ class SegmentedBody extends StatefulWidget {
   /// The index selected first, when [selectedIndex] is null.
   final int initialIndex;
 
-  /// Whether the control accepts taps.
+  /// Whether the control accepts input.
   final bool enabled;
+
+  /// How the control's segments share its width.
+  /// See [SlidingSegmentedControl.sizing].
+  final SegmentSizing sizing;
+
+  /// Whether the control's pill can be dragged between segments.
+  final bool enableDrag;
+
+  /// Whether a selection change fires haptic feedback.
+  final bool enableFeedback;
+
+  /// Whether the selected segment takes focus when the body first builds.
+  final bool autofocus;
 
   /// Gap between the control and the body.
   final double spacing;
@@ -202,6 +220,10 @@ class _SegmentedBodyState extends State<SegmentedBody> {
             selectedIndex: index,
             onSegmentChanged: _onSegmentChanged,
             enabled: widget.enabled,
+            sizing: widget.sizing,
+            enableDrag: widget.enableDrag,
+            enableFeedback: widget.enableFeedback,
+            autofocus: widget.autofocus,
             padding: widget.controlPadding,
             height: widget.controlHeight,
             duration: widget.indicatorDuration,
