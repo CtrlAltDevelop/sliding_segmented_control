@@ -1,4 +1,9 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:ui' show Tristate;
+
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sliding_segmented_control/sliding_segmented_control.dart';
 
@@ -7,13 +12,16 @@ void main() {
     Widget child, {
     TextDirection direction = TextDirection.ltr,
     SegmentedControlTheme? theme,
+    double? width = 300,
   }) =>
       MaterialApp(
         theme: ThemeData(extensions: theme == null ? const [] : [theme]),
         home: Directionality(
           textDirection: direction,
           child: Scaffold(
-            body: Center(child: SizedBox(width: 300, child: child)),
+            body: Center(
+              child: width == null ? child : SizedBox(width: width, child: child),
+            ),
           ),
         ),
       );
@@ -524,6 +532,523 @@ void main() {
 
       final disabled = theme.colorFor(selected: false, enabled: false);
       expect(disabled.a, closeTo(0.38, 0.01));
+    });
+  });
+
+  Rect segmentRect(WidgetTester tester, int index) =>
+      tester.getRect(find.byKey(SlidingSegmentedControl.segmentKey(index)));
+
+  group('keyboard', () {
+    testWidgets('an arrow key moves the selection along', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        autofocus: true,
+        onSegmentChanged: taps.add,
+      )));
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      expect(taps, [1]);
+    });
+
+    testWidgets('the arrow keys mirror under RTL', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(
+        SlidingSegmentedControl(
+          segments: segments,
+          selectedIndex: 1,
+          autofocus: true,
+          onSegmentChanged: taps.add,
+        ),
+        direction: TextDirection.rtl,
+      ));
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      expect(taps, [0], reason: 'right moves towards the start under RTL');
+    });
+
+    testWidgets('an arrow key steps over a disabled segment', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: const [
+          Segment(label: 'One'),
+          Segment(label: 'Two', enabled: false),
+          Segment(label: 'Three'),
+        ],
+        selectedIndex: 0,
+        autofocus: true,
+        onSegmentChanged: taps.add,
+      )));
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      expect(taps, [2]);
+    });
+
+    testWidgets('an arrow key stops at the end rather than wrapping',
+        (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 2,
+        autofocus: true,
+        onSegmentChanged: taps.add,
+      )));
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      expect(taps, isEmpty);
+    });
+
+    testWidgets('home and end jump to the first and last segment',
+        (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 1,
+        autofocus: true,
+        onSegmentChanged: taps.add,
+      )));
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.end);
+      await tester.sendKeyEvent(LogicalKeyboardKey.home);
+      expect(taps, [2, 0]);
+    });
+
+    testWidgets('enter activates the focused segment', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        autofocus: true,
+        onSegmentChanged: taps.add,
+      )));
+      await tester.pump();
+
+      // The host holds selectedIndex at 0, so focus lands on segment 1 while
+      // the selection stays put — and Enter reports it again.
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      expect(taps, [1, 1]);
+    });
+
+    testWidgets('the focused segment draws a focus ring', (tester) async {
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        autofocus: true,
+        onSegmentChanged: (_) {},
+      )));
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pump();
+
+      final rings = tester.widgetList<DecoratedBox>(find.byType(DecoratedBox)).where(
+            (box) =>
+                box.decoration is ShapeDecoration &&
+                ((box.decoration as ShapeDecoration).shape as OutlinedBorder)
+                        .side
+                        .width >
+                    0,
+          );
+      expect(rings, isNotEmpty);
+    });
+
+    testWidgets('only the selected segment is a tab stop', (tester) async {
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 1,
+        onSegmentChanged: (_) {},
+      )));
+
+      final nodes = tester
+          .widgetList<Focus>(find.byType(Focus))
+          .map((focus) => focus.focusNode)
+          .whereType<FocusNode>()
+          .where((node) => node.debugLabel?.startsWith('Segment') ?? false)
+          .toList();
+      expect(nodes.length, 3);
+      expect(
+        [for (final node in nodes) node.skipTraversal],
+        [true, false, true],
+      );
+    });
+
+    testWidgets('a disabled control takes no keys', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        enabled: false,
+        autofocus: true,
+        onSegmentChanged: taps.add,
+      )));
+      await tester.pump();
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      expect(taps, isEmpty);
+    });
+  });
+
+  group('pointer', () {
+    testWidgets('a hovered segment takes the hover overlay', (tester) async {
+      // Hover highlights are only drawn where a pointer is expected, which
+      // the focus manager reads off the platform. Reset inside the body: the
+      // framework checks for stray debug flags before tear-downs run.
+      debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+      const hover = Color(0xFF123456);
+      await tester.pumpWidget(host(
+        SlidingSegmentedControl(
+          segments: segments,
+          selectedIndex: 0,
+          onSegmentChanged: (_) {},
+        ),
+        theme: SegmentedControlTheme.fromScheme(const ColorScheme.light())
+            .copyWith(hoverColor: hover),
+      ));
+
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: Offset.zero);
+      addTearDown(mouse.removePointer);
+      await tester.pump();
+      await mouse.moveTo(tester.getCenter(find.text('Two')));
+      await tester.pumpAndSettle();
+
+      final overlays = tester
+          .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+          .where((box) =>
+              box.decoration is ShapeDecoration &&
+              (box.decoration as ShapeDecoration).color == hover);
+      expect(overlays, hasLength(1));
+      debugDefaultTargetPlatformOverride = null;
+    });
+  });
+
+  group('dragging', () {
+    testWidgets('dragging the pill picks the segment it lands on',
+        (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        onSegmentChanged: taps.add,
+      )));
+
+      await tester.drag(
+        find.byKey(SlidingSegmentedControl.segmentKey(0)),
+        const Offset(200, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(taps, [2]);
+    });
+
+    testWidgets('a short drag settles back where it started', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        onSegmentChanged: taps.add,
+      )));
+
+      await tester.drag(
+        find.byKey(SlidingSegmentedControl.segmentKey(0)),
+        const Offset(30, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(taps, isEmpty);
+    });
+
+    testWidgets('the indicator follows the pointer mid-drag', (tester) async {
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        onSegmentChanged: (_) {},
+      )));
+      final start = tester.getRect(indicator).left;
+
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byKey(SlidingSegmentedControl.segmentKey(0))),
+      );
+      await gesture.moveBy(const Offset(60, 0));
+      await tester.pump();
+
+      expect(tester.getRect(indicator).left, greaterThan(start));
+      await gesture.up();
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('a drag that does not start on the pill is ignored',
+        (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        onSegmentChanged: taps.add,
+      )));
+
+      await tester.drag(
+        find.byKey(SlidingSegmentedControl.segmentKey(2)),
+        const Offset(-200, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(taps, isEmpty);
+    });
+
+    testWidgets('enableDrag: false leaves dragging alone', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: segments,
+        selectedIndex: 0,
+        enableDrag: false,
+        onSegmentChanged: taps.add,
+      )));
+
+      await tester.drag(
+        find.byKey(SlidingSegmentedControl.segmentKey(0)),
+        const Offset(200, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(taps, isEmpty);
+    });
+
+    testWidgets('dragging runs the other way under RTL', (tester) async {
+      final taps = <int>[];
+      await tester.pumpWidget(host(
+        SlidingSegmentedControl(
+          segments: segments,
+          selectedIndex: 0,
+          onSegmentChanged: taps.add,
+        ),
+        direction: TextDirection.rtl,
+      ));
+
+      await tester.drag(
+        find.byKey(SlidingSegmentedControl.segmentKey(0)),
+        const Offset(-200, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(taps, [2]);
+    });
+  });
+
+  group('sizing', () {
+    const long = [
+      Segment(label: 'A'),
+      Segment(label: 'Considerably longer'),
+      Segment(label: 'Mid'),
+    ];
+
+    testWidgets('equal segments share the width', (tester) async {
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: long,
+        selectedIndex: 0,
+        onSegmentChanged: (_) {},
+      )));
+
+      expect(
+        segmentRect(tester, 0).width,
+        closeTo(segmentRect(tester, 1).width, 0.01),
+      );
+    });
+
+    testWidgets('intrinsic segments are as wide as their content',
+        (tester) async {
+      await tester.pumpWidget(host(
+        SlidingSegmentedControl(
+          segments: long,
+          selectedIndex: 0,
+          sizing: SegmentSizing.intrinsic,
+          onSegmentChanged: (_) {},
+        ),
+        width: null,
+      ));
+
+      expect(
+        segmentRect(tester, 1).width,
+        greaterThan(segmentRect(tester, 0).width),
+      );
+    });
+
+    testWidgets('an intrinsic control shrink-wraps its segments',
+        (tester) async {
+      await tester.pumpWidget(host(
+        SlidingSegmentedControl(
+          segments: long,
+          selectedIndex: 0,
+          sizing: SegmentSizing.intrinsic,
+          onSegmentChanged: (_) {},
+        ),
+        width: null,
+      ));
+
+      final control = tester.getSize(find.byType(SlidingSegmentedControl));
+      final segmentsWidth = [
+        for (var i = 0; i < long.length; i++) segmentRect(tester, i).width,
+      ].reduce((a, b) => a + b);
+      // The track's 4px padding and 1px border on each side is all the slack
+      // there is.
+      expect(control.width, closeTo(segmentsWidth + 10, 0.01));
+    });
+
+    testWidgets('the indicator takes the selected segment\'s width',
+        (tester) async {
+      await tester.pumpWidget(host(
+        SlidingSegmentedControl(
+          segments: long,
+          selectedIndex: 1,
+          sizing: SegmentSizing.intrinsic,
+          onSegmentChanged: (_) {},
+        ),
+        width: null,
+      ));
+
+      expect(tester.getRect(indicator), segmentRect(tester, 1));
+    });
+
+    testWidgets('intrinsic segments are squeezed rather than overflowing',
+        (tester) async {
+      await tester.pumpWidget(host(
+        SlidingSegmentedControl(
+          segments: long,
+          selectedIndex: 0,
+          sizing: SegmentSizing.intrinsic,
+          onSegmentChanged: (_) {},
+        ),
+        width: 120,
+      ));
+
+      expect(tester.takeException(), isNull);
+      final total = [
+        for (var i = 0; i < long.length; i++) segmentRect(tester, i).width,
+      ].reduce((a, b) => a + b);
+      expect(total, closeTo(110, 0.01));
+    });
+
+    testWidgets('a scrollable control lets its segments overflow',
+        (tester) async {
+      final many = [
+        for (var i = 0; i < 10; i++) Segment(label: 'Segment $i'),
+      ];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: many,
+        selectedIndex: 0,
+        sizing: SegmentSizing.scrollable,
+        onSegmentChanged: (_) {},
+      )));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+      expect(
+        tester.state<ScrollableState>(find.byType(Scrollable)).position
+            .maxScrollExtent,
+        greaterThan(0),
+        reason: 'the segments are wider than the track, and scroll',
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a scrollable control brings the selection into view',
+        (tester) async {
+      final many = [
+        for (var i = 0; i < 10; i++) Segment(label: 'Segment $i'),
+      ];
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: many,
+        selectedIndex: 9,
+        sizing: SegmentSizing.scrollable,
+        onSegmentChanged: (_) {},
+      )));
+      await tester.pumpAndSettle();
+
+      final control = tester.getRect(find.byType(SlidingSegmentedControl));
+      final selected = segmentRect(tester, 9);
+      expect(selected.left, greaterThanOrEqualTo(control.left - 0.01));
+      expect(selected.right, lessThanOrEqualTo(control.right + 0.01));
+    });
+  });
+
+  group('Segment', () {
+    testWidgets('a child replaces the label but not the semantics',
+        (tester) async {
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: const [
+          Segment(label: 'One', child: Text('Custom')),
+          Segment(label: 'Two'),
+        ],
+        selectedIndex: 0,
+        onSegmentChanged: (_) {},
+      )));
+
+      expect(find.text('Custom'), findsOneWidget);
+      expect(find.text('One'), findsNothing);
+      final semantics = tester
+          .getSemantics(find.byKey(SlidingSegmentedControl.segmentKey(0)));
+      expect(semantics.label, 'One');
+      expect(semantics.flagsCollection.isButton, isTrue);
+      expect(semantics.flagsCollection.isSelected, Tristate.isTrue);
+    });
+
+    testWidgets('a badge is shown after the label', (tester) async {
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: const [
+          Segment(label: 'Inbox', badge: Text('3')),
+          Segment(label: 'Sent'),
+        ],
+        selectedIndex: 0,
+        onSegmentChanged: (_) {},
+      )));
+
+      expect(find.text('3'), findsOneWidget);
+      expect(
+        tester.getCenter(find.text('3')).dx,
+        greaterThan(tester.getCenter(find.text('Inbox')).dx),
+      );
+    });
+
+    testWidgets('an iconWidget takes the segment\'s colour', (tester) async {
+      await tester.pumpWidget(host(SlidingSegmentedControl(
+        segments: const [
+          Segment(label: 'One', iconWidget: Icon(Icons.star)),
+          Segment(label: 'Two'),
+        ],
+        selectedIndex: 0,
+        onSegmentChanged: (_) {},
+        selectedLabelColor: const Color(0xFF00FF00),
+      )));
+
+      final icon = tester.widget<Icon>(find.byIcon(Icons.star));
+      expect(
+        IconTheme.of(tester.element(find.byIcon(Icons.star))).color,
+        const Color(0xFF00FF00),
+      );
+      expect(icon.icon, Icons.star);
+    });
+
+    test('copyWith replaces only what it is given', () {
+      const segment = Segment(label: 'One', tooltip: 'First');
+      final copy = segment.copyWith(label: 'Two');
+      expect(copy.label, 'Two');
+      expect(copy.tooltip, 'First');
+    });
+
+    test('segments and pages compare by value', () {
+      expect(const Segment(label: 'One'), const Segment(label: 'One'));
+      expect(
+        const Segment(label: 'One'),
+        isNot(const Segment(label: 'One', enabled: false)),
+      );
+      const body = Text('a');
+      expect(
+        const SegmentPage(segment: Segment(label: 'One'), child: body),
+        const SegmentPage(segment: Segment(label: 'One'), child: body),
+      );
+      expect(
+        const SegmentPage(segment: Segment(label: 'One'), child: body),
+        isNot(const SegmentPage(segment: Segment(label: 'Two'), child: body)),
+      );
     });
   });
 }
