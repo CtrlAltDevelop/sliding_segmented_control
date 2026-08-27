@@ -63,7 +63,8 @@ class _ExamplePageState extends State<ExamplePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Selected index: $_controlled',
+              'Selected index: $_controlled — tap a segment, drag the pill, '
+              'or tab to the control and use the arrow keys.',
               style: theme.textTheme.bodySmall,
             ),
 
@@ -103,6 +104,72 @@ class _ExamplePageState extends State<ExamplePage> {
                   Segment(label: 'Draft'),
                   Segment(label: 'Review'),
                   Segment(label: 'Published', enabled: false),
+                ],
+                selectedIndex: index,
+                onSegmentChanged: onChanged,
+              ),
+            ),
+
+            const _SectionTitle('Content-sized segments'),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: _Uncontrolled(
+                builder: (index, onChanged) => SlidingSegmentedControl(
+                  sizing: SegmentSizing.intrinsic,
+                  segments: const [
+                    Segment(label: 'All'),
+                    Segment(label: 'Needs attention'),
+                    Segment(label: 'Done'),
+                  ],
+                  selectedIndex: index,
+                  onSegmentChanged: onChanged,
+                ),
+              ),
+            ),
+
+            const _SectionTitle('Scrollable, for more segments than fit'),
+            _Uncontrolled(
+              builder: (index, onChanged) => SlidingSegmentedControl(
+                sizing: SegmentSizing.scrollable,
+                segments: const [
+                  Segment(label: 'Monday'),
+                  Segment(label: 'Tuesday'),
+                  Segment(label: 'Wednesday'),
+                  Segment(label: 'Thursday'),
+                  Segment(label: 'Friday'),
+                  Segment(label: 'Saturday'),
+                  Segment(label: 'Sunday'),
+                ],
+                selectedIndex: index,
+                onSegmentChanged: onChanged,
+              ),
+            ),
+
+            const _SectionTitle('Badges and content of your own'),
+            _Uncontrolled(
+              builder: (index, onChanged) => SlidingSegmentedControl(
+                segments: [
+                  Segment(
+                    label: 'Inbox',
+                    icon: Icons.inbox_outlined,
+                    badge: _Count(12, theme: theme),
+                  ),
+                  const Segment(label: 'Sent', icon: Icons.send_outlined),
+                  Segment(
+                    label: 'Archive',
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 6,
+                      children: [
+                        Icon(
+                          Icons.circle,
+                          size: 8,
+                          color: theme.colorScheme.tertiary,
+                        ),
+                        const Text('Archive'),
+                      ],
+                    ),
+                  ),
                 ],
                 selectedIndex: index,
                 onSegmentChanged: onChanged,
@@ -163,6 +230,28 @@ class _UncontrolledState extends State<_Uncontrolled> {
   @override
   Widget build(BuildContext context) =>
       widget.builder(_index, (i) => setState(() => _index = i));
+}
+
+/// A pill of a badge, for the segment that carries a count.
+class _Count extends StatelessWidget {
+  const _Count(this.value, {required this.theme});
+
+  final int value;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+        decoration: ShapeDecoration(
+          color: theme.colorScheme.tertiaryContainer,
+          shape: const StadiumBorder(),
+        ),
+        child: Text(
+          '$value',
+          style: theme.textTheme.labelSmall
+              ?.copyWith(color: theme.colorScheme.onTertiaryContainer),
+        ),
+      );
 }
 
 class _SectionTitle extends StatelessWidget {

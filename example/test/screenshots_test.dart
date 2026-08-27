@@ -100,6 +100,71 @@ void main() {
     );
   });
 
+  testWidgets('the sizing modes', (tester) async {
+    tester.view
+      ..physicalSize = const Size(880, 460)
+      ..devicePixelRatio = 2;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(_canvas([
+      Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: SlidingSegmentedControl(
+          sizing: SegmentSizing.intrinsic,
+          segments: const [
+            Segment(label: 'All'),
+            Segment(label: 'Needs attention'),
+            Segment(label: 'Done'),
+          ],
+          selectedIndex: 1,
+          onSegmentChanged: (_) {},
+        ),
+      ),
+      SlidingSegmentedControl(
+        sizing: SegmentSizing.scrollable,
+        segments: const [
+          Segment(label: 'Monday'),
+          Segment(label: 'Tuesday'),
+          Segment(label: 'Wednesday'),
+          Segment(label: 'Thursday'),
+          Segment(label: 'Friday'),
+          Segment(label: 'Saturday'),
+        ],
+        selectedIndex: 0,
+        onSegmentChanged: (_) {},
+      ),
+      SlidingSegmentedControl(
+        segments: [
+          Segment(
+            label: 'Inbox',
+            icon: Icons.inbox_outlined,
+            badge: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: const ShapeDecoration(
+                color: Color(0xFFDCE7FF),
+                shape: StadiumBorder(),
+              ),
+              child: const Text(
+                '12',
+                style: TextStyle(fontSize: 11, color: Color(0xFF1B3A78)),
+              ),
+            ),
+          ),
+          const Segment(label: 'Sent', icon: Icons.send_outlined),
+          const Segment(label: 'Archive', icon: Icons.archive_outlined),
+        ],
+        selectedIndex: 0,
+        onSegmentChanged: (_) {},
+      ),
+    ]));
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('../../screenshots/sizing.png'),
+    );
+  });
+
   testWidgets('a SegmentedBody', (tester) async {
     tester.view
       ..physicalSize = const Size(880, 460)
