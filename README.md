@@ -4,6 +4,10 @@ A segmented control whose selection is marked by a **pill that slides** between
 segments, rather than by a highlighted button — plus `SegmentedBody`, which
 pairs the control with a body that cross-fades as the pill moves.
 
+The selection can be tapped, **dragged** — press the pill and slide it, as on
+iOS — or moved with the **arrow keys**. Segments share the width equally, take
+their own width, or scroll.
+
 Material comes from the **`material_ui`** package rather than from
 `package:flutter/material.dart`, so your app has to be on `material_ui` too —
 its `ThemeData` and `ColorScheme` are not the framework's. Beyond that the
@@ -20,6 +24,10 @@ The control in three styles — default, with icons, and with a solid indicator:
 
 ![The control in three styles](screenshots/control.png)
 
+Segments sized to their content, a scrollable track, and a badge:
+
+![Content-sized, scrollable and badged segments](screenshots/sizing.png)
+
 And a `SegmentedBody`, the control above the body of the selected segment:
 
 ![A SegmentedBody](screenshots/body.png)
@@ -34,8 +42,8 @@ Or add it to `pubspec.yaml` yourself — it is a runtime dependency:
 
 ```yaml
 dependencies:
-  material_ui: ^1.0.0
-  sliding_segmented_control: ^1.0.0
+  material_ui: ">=1.0.0 <3.0.0"
+  sliding_segmented_control: ^1.1.0
 ```
 
 then:
@@ -81,12 +89,18 @@ instead.
 | --- | --- | --- |
 | `segments` | — | The segments, sharing the width equally. Must not be empty |
 | `selectedIndex` | — | Index of the selected segment |
-| `onSegmentChanged` | — | Called with the tapped index |
-| `enabled` | `true` | Whether the control accepts taps at all |
+| `onSegmentChanged` | — | Called with the newly selected index, however it was picked |
+| `enabled` | `true` | Whether the control accepts input at all |
+| `sizing` | `equal` | `equal`, `intrinsic` or `scrollable` — see [Sizing](#sizing) |
+| `enableDrag` | `true` | Whether the pill can be dragged between segments |
+| `enableFeedback` | `true` | Whether a selection change fires haptic feedback |
+| `autofocus` | `false` | Whether the selected segment takes focus on first build |
+| `scrollController` | null | Controller for a `scrollable` control's scroll view |
 | `duration` | 250 ms | How long the indicator takes to slide |
 | `curve` | `easeInOut` | The curve it slides on |
 | `height` | theme | Overrides the theme's height |
 | `padding` | theme | Inset between the track edge and the segments |
+| `segmentPadding` | theme | Inset between a segment's edge and its content |
 | `trackRadius` / `indicatorRadius` | theme | Per-instance corner radii |
 | `trackShape` / `indicatorShape` | theme | Per-instance `ShapeBorder`s, overriding the radii |
 | `labelStyle` / `selectedLabelStyle` | theme | Per-instance text styles |
@@ -94,8 +108,41 @@ instead.
 | `semanticLabel` | null | Screen-reader label for the control as a whole |
 
 A `Segment` is a `label`, an optional `icon`, and `enabled` — a disabled
-segment is dimmed and ignores taps. It also takes a `semanticLabel` and a
-`tooltip`.
+segment is dimmed and ignores input. It also takes a `semanticLabel` and a
+`tooltip`, and three ways to draw something other than plain text:
+
+| Field | What it does |
+| --- | --- |
+| `iconWidget` | A widget in place of `icon` — an avatar, an SVG, a flag. Takes the segment's colour through `IconTheme` |
+| `badge` | A widget after the label — a count, a dot, a status chip |
+| `child` | Replaces the icon and label outright. `label` stays on as the screen-reader text |
+
+```dart
+Segment(label: 'Inbox', icon: Icons.inbox_outlined, badge: const Text('12'))
+```
+
+`Segment` and `SegmentPage` compare by value and have a `copyWith`.
+
+### Sizing
+
+`sizing` decides how the segments share the control's width.
+
+| `SegmentSizing` | What it does |
+| --- | --- |
+| `equal` | Every segment is the same width and the control fills its parent. The default |
+| `intrinsic` | Each segment is as wide as its content and the control shrink-wraps them. Content that does not fit is squeezed proportionally rather than overflowing |
+| `scrollable` | Content-sized segments in a horizontal scroll view, which keeps the selected segment in view |
+
+The pill takes the width of whichever segment it is under, so it grows and
+shrinks as it slides between segments of different widths.
+
+### Dragging
+
+Press the pill and slide it: the pill follows the pointer, ticks out haptic
+feedback as it crosses into each segment, and commits to the segment nearest
+where it is let go. Set `enableDrag: false` to leave dragging alone, or
+`enableFeedback: false` for the haptics only. A press that starts anywhere but
+on the pill is an ordinary tap.
 
 ### `SegmentedBody`
 
@@ -105,6 +152,8 @@ segment is dimmed and ignores taps. It also takes a `semanticLabel` and a
 | `selectedIndex` | null | Pass it to control the selection; leave null to let the widget keep it |
 | `initialIndex` | `0` | The index selected first, when uncontrolled |
 | `onSegmentChanged` | null | Called with the new index, in both modes |
+| `sizing` | `equal` | How the control's segments share its width |
+| `enableDrag` / `enableFeedback` / `autofocus` | `true` / `true` / `false` | Forwarded to the control |
 | `spacing` | `14` | Gap between the control and the body |
 | `controlMargin` | `zero` | Padding around the control, outside its track |
 | `bodyExpanded` | `false` | Whether the body fills the remaining height |
@@ -183,6 +232,10 @@ over whatever the extension says.
 | `trackShape` / `indicatorShape` | rounded | Full `ShapeBorder`s, overriding the radii |
 | `smoothCorners` | `true` | Squircle corners, or plain circular ones |
 | `trackPadding` | `4` | Inset between the track edge and the segments |
+| `segmentPadding` | `12` horizontal | Inset between a segment's edge and its content, which is what gives a content-sized segment its width |
+| `hoverColor` | 6% of unselected | Overlay on the segment under the pointer |
+| `focusColor` | 10% of unselected | Overlay on the segment holding keyboard focus |
+| `focusOutlineColor` / `focusOutlineWidth` | scheme primary / `2` | The focus ring. Width `0` drops it |
 | `height` | `44` | Height of the whole control |
 | `iconSize` / `iconLabelSpacing` | `14` / `4` | Segment icon metrics |
 | `indicatorShadows` | none | Shadows cast by the pill |
@@ -234,11 +287,23 @@ SlidingSegmentedControl(
 
 ## Right-to-left
 
-The indicator is positioned with `AlignmentDirectional`, so under
-`TextDirection.rtl` the first segment is on the right and the pill slides
-leftwards. Nothing to configure.
+Segments are laid out along the text direction, so under `TextDirection.rtl`
+the first segment is on the right and the pill slides leftwards. Drags and the
+arrow keys mirror with it. Nothing to configure.
 
-## Accessibility
+## Keyboard and accessibility
+
+The control is a single tab stop, like a radio group: <kbd>Tab</kbd> reaches
+the selected segment and the arrow keys move from there.
+
+| Key | What it does |
+| --- | --- |
+| <kbd>←</kbd> / <kbd>→</kbd> | Moves the selection one segment, stepping over disabled ones and stopping at the ends. Mirrored under RTL |
+| <kbd>Home</kbd> / <kbd>End</kbd> | Moves to the first or last enabled segment |
+| <kbd>Space</kbd> / <kbd>Enter</kbd> | Selects the focused segment |
+
+The focused segment is drawn with `focusColor` behind it and a ring in
+`focusOutlineColor`, and the segment under the pointer takes `hoverColor`.
 
 Each segment is exposed as a button carrying its selected and enabled state,
 with a tap action, labelled by `Segment.semanticLabel` or its label. Note the
@@ -247,12 +312,22 @@ theme where that matters.
 
 ## Testing against it
 
-The sliding indicator carries `SlidingSegmentedControl.indicatorKey`, so host
-tests can find and measure it:
+The sliding indicator carries `SlidingSegmentedControl.indicatorKey` and each
+segment carries `SlidingSegmentedControl.segmentKey(index)`, so host tests can
+find and measure them:
 
 ```dart
 final pill = tester.getRect(
   find.byKey(SlidingSegmentedControl.indicatorKey),
+);
+final second = tester.getRect(
+  find.byKey(SlidingSegmentedControl.segmentKey(1)),
+);
+
+// Drag the pill to the last segment.
+await tester.drag(
+  find.byKey(SlidingSegmentedControl.segmentKey(0)),
+  const Offset(200, 0),
 );
 ```
 

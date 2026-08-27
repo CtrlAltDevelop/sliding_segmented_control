@@ -1,5 +1,46 @@
 # Changelog
 
+## 1.1.0
+
+- The selection can be **dragged**: press the pill and slide it, as on iOS.
+  The pill follows the pointer, ticks out haptic feedback as it crosses into
+  each segment, and commits to the segment nearest where it is let go. A press
+  that starts anywhere but on the pill is still an ordinary tap. `enableDrag`
+  and `enableFeedback` turn each half of that off.
+- **Keyboard support.** The control is one tab stop, like a radio group: Tab
+  reaches the selected segment, the arrow keys move the selection from there —
+  stepping over disabled segments, stopping at the ends, and mirroring under
+  RTL — Home and End jump to either end, and Space or Enter selects the
+  focused segment. `autofocus` gives the control focus on first build.
+- The focused segment is drawn with `focusColor` behind it and a ring in
+  `focusOutlineColor`, and the segment under the pointer takes `hoverColor`.
+  All three are on the theme, alongside `focusOutlineWidth`.
+- **Sizing modes**, through `sizing`. `SegmentSizing.equal` is the old
+  behaviour and stays the default; `intrinsic` sizes each segment to its own
+  content and shrink-wraps the control, squeezing the segments proportionally
+  rather than overflowing when they do not fit; `scrollable` puts
+  content-sized segments in a horizontal scroll view that keeps the selection
+  in view. The pill takes the width of whichever segment it is under.
+- `SegmentedControlTheme.segmentPadding` insets a segment's content, and is
+  what gives a content-sized segment its width beyond the label.
+- `Segment` gains `iconWidget` for an icon this package cannot express as an
+  `IconData`, `badge` for a count or status chip after the label, and `child`
+  to replace the icon and label outright while `label` stays on as the
+  screen-reader text. `Segment` and `SegmentPage` both gain `copyWith`, and
+  `SegmentPage` now compares by value.
+- Every segment carries `SlidingSegmentedControl.segmentKey(index)`, so host
+  tests can find and measure one.
+- The floors come down to Dart 3.12.0 and Flutter 3.44.0, which is as low as
+  `material_ui` itself goes — nothing here needs anything newer than
+  `RoundedSuperellipseBorder`, in the framework since 3.32. The example moves
+  down with the package.
+- The `material_ui` constraint floats across major versions,
+  `>=1.0.0 <3.0.0`, rather than being capped at 1.x.
+- The layout is a render object rather than a `Stack` of aligned children,
+  which is what lets the pill size itself to segments of different widths.
+  Nothing public changed with it: `indicatorKey` and `indicatorAlignment` are
+  where they were, and the widget is drop-in from 1.0.0.
+
 ## 1.0.0
 
 - **Breaking.** Material comes from the `material_ui` package, not from

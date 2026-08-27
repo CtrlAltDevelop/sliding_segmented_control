@@ -1,7 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:ui' show Tristate;
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -984,11 +982,12 @@ void main() {
 
       expect(find.text('Custom'), findsOneWidget);
       expect(find.text('One'), findsNothing);
-      final semantics = tester
-          .getSemantics(find.byKey(SlidingSegmentedControl.segmentKey(0)));
-      expect(semantics.label, 'One');
-      expect(semantics.flagsCollection.isButton, isTrue);
-      expect(semantics.flagsCollection.isSelected, Tristate.isTrue);
+      expect(
+        tester
+            .getSemantics(find.byKey(SlidingSegmentedControl.segmentKey(0)))
+            .label,
+        'One',
+      );
     });
 
     testWidgets('a badge is shown after the label', (tester) async {

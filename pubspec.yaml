@@ -2,7 +2,7 @@ name: sliding_segmented_control
 description: >-
   A themeable segmented control whose selection is marked by a pill sliding
   between segments, with an optional body that cross-fades underneath it.
-version: 1.0.0
+version: 1.1.0
 homepage: https://github.com/CtrlAltDevelop
 repository: https://github.com/CtrlAltDevelop/sliding_segmented_control
 issue_tracker: https://github.com/CtrlAltDevelop/sliding_segmented_control/issues
@@ -14,13 +14,13 @@ topics:
   - widget
 
 environment:
-  sdk: ^3.13.0
-  flutter: ">=3.47.0"
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  material_ui: ^1.0.0
+  material_ui: ">=1.0.0 <3.0.0"
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -32,6 +32,9 @@ screenshots:
       The control in its default and solid-indicator styles, with and without
       segment icons.
     path: screenshots/control.png
+  - description: >-
+      Segments sized to their content, a scrollable track, and a badge.
+    path: screenshots/sizing.png
   - description: >-
       A SegmentedBody — the control above the body of the selected segment.
     path: screenshots/body.png
