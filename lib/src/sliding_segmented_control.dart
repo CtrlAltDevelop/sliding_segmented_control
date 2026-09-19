@@ -59,11 +59,11 @@ class SlidingSegmentedControl extends StatefulWidget {
     this.selectedLabelColor,
     this.unselectedLabelColor,
     this.semanticLabel,
-  })  : assert(segments.length > 0, 'segments must not be empty'),
-        assert(
-          selectedIndex >= 0 && selectedIndex < segments.length,
-          'selectedIndex must be a valid index into segments',
-        );
+  }) : assert(segments.length > 0, 'segments must not be empty'),
+       assert(
+         selectedIndex >= 0 && selectedIndex < segments.length,
+         'selectedIndex must be a valid index into segments',
+       );
 
   /// The segments, laid out in order across the track. Must not be empty.
   final List<Segment> segments;
@@ -209,7 +209,12 @@ class _SlidingSegmentedControlState extends State<SlidingSegmentedControl>
   void didUpdateWidget(SlidingSegmentedControl oldWidget) {
     super.didUpdateWidget(oldWidget);
     _syncSegments();
-    if (widget.selectedIndex != oldWidget.selectedIndex && !_dragging) {
+    // The gesture detector goes away with dragging, taking the drag's end and
+    // cancel callbacks with it, so a drag in flight has to be dropped here.
+    if (_dragging && !(widget.enableDrag && widget.enabled)) {
+      _endDrag();
+      _animateTo(widget.selectedIndex);
+    } else if (widget.selectedIndex != oldWidget.selectedIndex && !_dragging) {
       _animateTo(widget.selectedIndex);
     }
   }
@@ -285,8 +290,8 @@ class _SlidingSegmentedControlState extends State<SlidingSegmentedControl>
     final track = _track;
     if (track == null || !_dragging) return;
     final x = track.globalToLocal(details.globalPosition).dx;
-    final centre = track.centerForPosition(_dragStartPosition!) +
-        (x - _dragStartPointer!);
+    final centre =
+        track.centerForPosition(_dragStartPosition!) + (x - _dragStartPointer!);
     final position = track
         .positionForCenter(centre)
         .clamp(0.0, (widget.segments.length - 1).toDouble());
@@ -304,11 +309,20 @@ class _SlidingSegmentedControlState extends State<SlidingSegmentedControl>
   void _onDragEnd(DragEndDetails details) {
     if (!_dragging) return;
     final index = _position.value.round();
-    setState(() {
-      _dragStartPosition = null;
-      _dragStartPointer = null;
-    });
+    setState(_endDrag);
     _select(index);
+  }
+
+  /// A drag the arena took back: settle on the selection the host still holds.
+  void _onDragCancel() {
+    if (!_dragging) return;
+    setState(_endDrag);
+    _animateTo(widget.selectedIndex);
+  }
+
+  void _endDrag() {
+    _dragStartPosition = null;
+    _dragStartPointer = null;
   }
 
   // --- Keyboard ------------------------------------------------------------
@@ -317,9 +331,11 @@ class _SlidingSegmentedControlState extends State<SlidingSegmentedControl>
   /// end, and moves focus with it.
   void _move(int delta) {
     if (Directionality.of(context) == TextDirection.rtl) delta = -delta;
-    for (var i = widget.selectedIndex + delta;
-        i >= 0 && i < widget.segments.length;
-        i += delta) {
+    for (
+      var i = widget.selectedIndex + delta;
+      i >= 0 && i < widget.segments.length;
+      i += delta
+    ) {
       if (_selectable(i)) {
         _nodes[i].requestFocus();
         _select(i, feedback: true);
@@ -425,8 +441,12 @@ class _SlidingSegmentedControlState extends State<SlidingSegmentedControl>
           hovered: _hovered == i,
           focused: _focused == i,
           autofocus: widget.autofocus && i == widget.selectedIndex,
-          onHover: (on) => setState(() => _hovered = on ? i : null),
-          onFocus: (on) => setState(() => _focused = on ? i : null),
+          onHover: (on) {
+            if (mounted) setState(() => _hovered = on ? i : null);
+          },
+          onFocus: (on) {
+            if (mounted) setState(() => _focused = on ? i : null);
+          },
           onTap: () => _select(i),
           onMove: _move,
           onMoveToEnd: _moveToEnd,
@@ -474,6 +494,7 @@ class _SlidingSegmentedControlState extends State<SlidingSegmentedControl>
         onHorizontalDragStart: _onDragStart,
         onHorizontalDragUpdate: _onDragUpdate,
         onHorizontalDragEnd: _onDragEnd,
+        onHorizontalDragCancel: _onDragCancel,
         child: control,
       );
     }
@@ -551,7 +572,8 @@ class _SegmentTile extends StatelessWidget {
       enabled: enabled,
     );
 
-    Widget content = segment.child ??
+    Widget content =
+        segment.child ??
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -624,8 +646,9 @@ class _SegmentTile extends StatelessWidget {
         autofocus: autofocus,
         focusNode: focusNode,
         descendantsAreFocusable: false,
-        mouseCursor:
-            enabled ? SystemMouseCursors.click : SystemMouseCursors.basic,
+        mouseCursor: enabled
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
         onShowHoverHighlight: onHover,
         onShowFocusHighlight: onFocus,
         shortcuts: _shortcuts,

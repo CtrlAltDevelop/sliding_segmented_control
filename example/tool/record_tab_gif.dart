@@ -37,9 +37,9 @@ Future<void> _loadFonts() async {
   Future<void> load(String family, String path) async {
     final file = File(path);
     if (!file.existsSync()) return;
-    await (FontLoader(family)
-          ..addFont(file.readAsBytes().then((b) => ByteData.view(b.buffer))))
-        .load();
+    await (FontLoader(
+      family,
+    )..addFont(file.readAsBytes().then((b) => ByteData.view(b.buffer)))).load();
   }
 
   await load('Roboto', '$fonts/Roboto-Regular.ttf');
@@ -47,47 +47,47 @@ Future<void> _loadFonts() async {
 }
 
 Widget _canvas() => MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: buildDemoTheme(Brightness.light),
-      home: RepaintBoundary(
-        key: _canvasKey,
-        child: Scaffold(
-          backgroundColor: const Color(0xFFFFFFFF),
-          body: Padding(
-            padding: const EdgeInsets.all(24),
-            child: SegmentedBody(
-              bodyTransition: SegmentedBodyTransition.slide,
-              pages: [
-                SegmentPage.of(
-                  label: 'Overview',
-                  icon: Icons.dashboard_outlined,
-                  child: const DemoPanel(
-                    title: 'Overview',
-                    body: 'The pill slides between segments.',
-                  ),
-                ),
-                SegmentPage.of(
-                  label: 'Activity',
-                  icon: Icons.timeline,
-                  child: const DemoPanel(
-                    title: 'Activity',
-                    body: 'The body follows the way the selection moved.',
-                  ),
-                ),
-                SegmentPage.of(
-                  label: 'Settings',
-                  icon: Icons.tune,
-                  child: const DemoPanel(
-                    title: 'Settings',
-                    body: 'Going back sends it the other way.',
-                  ),
-                ),
-              ],
+  debugShowCheckedModeBanner: false,
+  theme: buildDemoTheme(Brightness.light),
+  home: RepaintBoundary(
+    key: _canvasKey,
+    child: Scaffold(
+      backgroundColor: const Color(0xFFFFFFFF),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: SegmentedBody(
+          bodyTransition: SegmentedBodyTransition.slide,
+          pages: [
+            SegmentPage.of(
+              label: 'Overview',
+              icon: Icons.dashboard_outlined,
+              child: const DemoPanel(
+                title: 'Overview',
+                body: 'The pill slides between segments.',
+              ),
             ),
-          ),
+            SegmentPage.of(
+              label: 'Activity',
+              icon: Icons.timeline,
+              child: const DemoPanel(
+                title: 'Activity',
+                body: 'The body follows the way the selection moved.',
+              ),
+            ),
+            SegmentPage.of(
+              label: 'Settings',
+              icon: Icons.tune,
+              child: const DemoPanel(
+                title: 'Settings',
+                body: 'Going back sends it the other way.',
+              ),
+            ),
+          ],
         ),
       ),
-    );
+    ),
+  ),
+);
 
 void main() {
   setUpAll(_loadFonts);
@@ -105,8 +105,9 @@ void main() {
 
     /// Grabs whatever is on screen right now.
     Future<void> grab() async {
-      final boundary =
-          tester.renderObject<RenderRepaintBoundary>(find.byKey(_canvasKey));
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(_canvasKey),
+      );
       await tester.runAsync(() async {
         final image = await boundary.toImage();
         final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
@@ -155,7 +156,9 @@ void main() {
 
     final out = File('../screenshots/tabs.gif')..writeAsBytesSync(bytes!);
     // ignore: avoid_print — this is a generator script, not a test.
-    print('wrote ${out.path}: ${frames.length} frames, '
-        '${(bytes.length / 1024).round()} KB');
+    print(
+      'wrote ${out.path}: ${frames.length} frames, '
+      '${(bytes.length / 1024).round()} KB',
+    );
   });
 }

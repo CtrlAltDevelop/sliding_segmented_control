@@ -24,8 +24,10 @@ ThemeData buildDemoTheme(Brightness brightness) {
         selectedLabelColor: scheme.primary,
         unselectedLabelColor: scheme.onSurfaceVariant,
         labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        selectedLabelStyle:
-            const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        selectedLabelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     ],
   );

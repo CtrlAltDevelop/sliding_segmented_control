@@ -70,14 +70,14 @@ class RenderSegmentedTrack extends RenderBox
     required double position,
     required SegmentSizing sizing,
     required TextDirection textDirection,
-  })  // Named parameters cannot be private, so these cannot be initialising
-      // formals.
-      // ignore: prefer_initializing_formals
-      : _position = position,
-        // ignore: prefer_initializing_formals
-        _sizing = sizing,
-        // ignore: prefer_initializing_formals
-        _textDirection = textDirection;
+  }) // Named parameters cannot be private, so these cannot be initialising
+    // formals.
+    // ignore: prefer_initializing_formals
+    : _position = position,
+       // ignore: prefer_initializing_formals
+       _sizing = sizing,
+       // ignore: prefer_initializing_formals
+       _textDirection = textDirection;
 
   double _position;
   double get position => _position;
@@ -171,6 +171,43 @@ class RenderSegmentedTrack extends RenderBox
   }
 
   @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    if (segmentCount == 0) return constraints.smallest;
+
+    final height = constraints.hasBoundedHeight
+        ? constraints.maxHeight
+        : _intrinsicHeight(constraints.maxWidth);
+
+    // Mirrors performLayout, measuring instead of laying out.
+    double total;
+    if (sizing == SegmentSizing.equal) {
+      total = constraints.hasBoundedWidth
+          ? constraints.maxWidth
+          : _intrinsicWidth(height, min: false);
+    } else {
+      total = 0;
+      for (final segment in _segments) {
+        total += segment
+            .getDryLayout(
+              BoxConstraints(
+                maxWidth: constraints.maxWidth,
+                minHeight: height,
+                maxHeight: height,
+              ),
+            )
+            .width;
+      }
+      if (constraints.hasBoundedWidth && total > constraints.maxWidth) {
+        total = constraints.maxWidth;
+      }
+    }
+    return Size(
+      constraints.constrainWidth(total),
+      constraints.constrainHeight(height),
+    );
+  }
+
+  @override
   void performLayout() {
     _lefts.clear();
     _widths.clear();
@@ -239,8 +276,10 @@ class RenderSegmentedTrack extends RenderBox
     var i = 0;
     for (final segment in _segments) {
       final left = _rtl ? size.width - x - widths[i] : x;
-      (segment.parentData! as SegmentedTrackParentData).offset =
-          Offset(left, 0);
+      (segment.parentData! as SegmentedTrackParentData).offset = Offset(
+        left,
+        0,
+      );
       _lefts.add(left);
       _widths.add(widths[i]);
       x += widths[i];
@@ -265,8 +304,10 @@ class RenderSegmentedTrack extends RenderBox
     final left = _lerp(_lefts[low], _lefts[high], t);
 
     indicator.layout(BoxConstraints.tightFor(width: width, height: height));
-    (indicator.parentData! as SegmentedTrackParentData).offset =
-        Offset(left, 0);
+    (indicator.parentData! as SegmentedTrackParentData).offset = Offset(
+      left,
+      0,
+    );
   }
 
   static double _lerp(double a, double b, double t) => a + (b - a) * t;
@@ -306,10 +347,8 @@ class RenderSegmentedTrack extends RenderBox
   }
 
   /// The index of the segment under [x], for a tap or the end of a drag.
-  int indexForOffset(double x) => positionForCenter(x).round().clamp(
-        0,
-        math.max(segmentCount - 1, 0),
-      );
+  int indexForOffset(double x) =>
+      positionForCenter(x).round().clamp(0, math.max(segmentCount - 1, 0));
 
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>

@@ -28,9 +28,9 @@ class Segment {
     this.semanticLabel,
     this.tooltip,
   }) : assert(
-          icon == null || iconWidget == null,
-          'Give a segment either an icon or an iconWidget, not both',
-        );
+         icon == null || iconWidget == null,
+         'Give a segment either an icon or an iconWidget, not both',
+       );
 
   /// The text shown in the segment.
   ///
@@ -75,17 +75,16 @@ class Segment {
     bool? enabled,
     String? semanticLabel,
     String? tooltip,
-  }) =>
-      Segment(
-        label: label ?? this.label,
-        icon: icon ?? this.icon,
-        iconWidget: iconWidget ?? this.iconWidget,
-        child: child ?? this.child,
-        badge: badge ?? this.badge,
-        enabled: enabled ?? this.enabled,
-        semanticLabel: semanticLabel ?? this.semanticLabel,
-        tooltip: tooltip ?? this.tooltip,
-      );
+  }) => Segment(
+    label: label ?? this.label,
+    icon: icon ?? this.icon,
+    iconWidget: iconWidget ?? this.iconWidget,
+    child: child ?? this.child,
+    badge: badge ?? this.badge,
+    enabled: enabled ?? this.enabled,
+    semanticLabel: semanticLabel ?? this.semanticLabel,
+    tooltip: tooltip ?? this.tooltip,
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -102,15 +101,15 @@ class Segment {
 
   @override
   int get hashCode => Object.hash(
-        label,
-        icon,
-        iconWidget,
-        child,
-        badge,
-        enabled,
-        semanticLabel,
-        tooltip,
-      );
+    label,
+    icon,
+    iconWidget,
+    child,
+    badge,
+    enabled,
+    semanticLabel,
+    tooltip,
+  );
 
   @override
   String toString() => 'Segment($label${enabled ? '' : ', disabled'})';
@@ -133,14 +132,14 @@ class SegmentPage {
     String? semanticLabel,
     String? tooltip,
   }) : segment = Segment(
-          label: label,
-          icon: icon,
-          iconWidget: iconWidget,
-          badge: badge,
-          enabled: enabled,
-          semanticLabel: semanticLabel,
-          tooltip: tooltip,
-        );
+         label: label,
+         icon: icon,
+         iconWidget: iconWidget,
+         badge: badge,
+         enabled: enabled,
+         semanticLabel: semanticLabel,
+         tooltip: tooltip,
+       );
 
   /// The segment in the control.
   final Segment segment;

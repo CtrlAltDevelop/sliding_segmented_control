@@ -52,8 +52,10 @@ enum SegmentedBodyTransition {
           return SlideTransition(
             textDirection: textDirection,
             position: animation.drive(
-              Tween<Offset>(begin: Offset(dx, 0), end: Offset.zero)
-                  .chain(CurveTween(curve: Curves.easeOutCubic)),
+              Tween<Offset>(
+                begin: Offset(dx, 0),
+                end: Offset.zero,
+              ).chain(CurveTween(curve: Curves.easeOutCubic)),
             ),
             child: FadeTransition(opacity: animation, child: child),
           );
@@ -61,12 +63,14 @@ enum SegmentedBodyTransition {
 
       case SegmentedBodyTransition.scale:
         return (child, animation) => ScaleTransition(
-              scale: animation.drive(
-                Tween<double>(begin: 1 - scaleExtent, end: 1)
-                    .chain(CurveTween(curve: Curves.easeOutCubic)),
-              ),
-              child: FadeTransition(opacity: animation, child: child),
-            );
+          scale: animation.drive(
+            Tween<double>(
+              begin: 1 - scaleExtent,
+              end: 1,
+            ).chain(CurveTween(curve: Curves.easeOutCubic)),
+          ),
+          child: FadeTransition(opacity: animation, child: child),
+        );
     }
   }
 }

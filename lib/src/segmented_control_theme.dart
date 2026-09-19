@@ -148,7 +148,8 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
   /// [ColorScheme] when the host has not registered an extension.
   static SegmentedControlTheme of(BuildContext context) {
     final theme = Theme.of(context);
-    return theme.extension<SegmentedControlTheme>() ?? fromScheme(theme.colorScheme);
+    return theme.extension<SegmentedControlTheme>() ??
+        fromScheme(theme.colorScheme);
   }
 
   /// A palette derived from [scheme]: a tinted indicator on a surface track.
@@ -179,7 +180,9 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
   /// The overlay to paint over a segment in the given interaction state, or
   /// null when it is neither hovered nor focused.
   Color? overlayFor({required bool hovered, required bool focused}) {
-    if (focused) return focusColor ?? unselectedLabelColor.withValues(alpha: 0.1);
+    if (focused) {
+      return focusColor ?? unselectedLabelColor.withValues(alpha: 0.1);
+    }
     if (hovered) {
       return hoverColor ?? unselectedLabelColor.withValues(alpha: 0.06);
     }
@@ -207,10 +210,9 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
   OutlinedBorder shapeFor(
     BorderRadiusGeometry radius, {
     BorderSide side = BorderSide.none,
-  }) =>
-      smoothCorners
-          ? RoundedSuperellipseBorder(side: side, borderRadius: radius)
-          : RoundedRectangleBorder(side: side, borderRadius: radius);
+  }) => smoothCorners
+      ? RoundedSuperellipseBorder(side: side, borderRadius: radius)
+      : RoundedRectangleBorder(side: side, borderRadius: radius);
 
   /// The style for a segment's label, with this theme's colour and family
   /// filled in wherever the host left them unset.
@@ -262,34 +264,33 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
     double? iconSize,
     double? iconLabelSpacing,
     List<BoxShadow>? indicatorShadows,
-  }) =>
-      SegmentedControlTheme(
-        trackColor: trackColor ?? this.trackColor,
-        borderColor: borderColor ?? this.borderColor,
-        indicatorColor: indicatorColor ?? this.indicatorColor,
-        selectedLabelColor: selectedLabelColor ?? this.selectedLabelColor,
-        unselectedLabelColor: unselectedLabelColor ?? this.unselectedLabelColor,
-        disabledLabelColor: disabledLabelColor ?? this.disabledLabelColor,
-        labelStyle: labelStyle ?? this.labelStyle,
-        selectedLabelStyle: selectedLabelStyle ?? this.selectedLabelStyle,
-        fontFamily: fontFamily ?? this.fontFamily,
-        borderWidth: borderWidth ?? this.borderWidth,
-        trackRadius: trackRadius ?? this.trackRadius,
-        indicatorRadius: indicatorRadius ?? this.indicatorRadius,
-        trackShape: trackShape ?? this.trackShape,
-        indicatorShape: indicatorShape ?? this.indicatorShape,
-        smoothCorners: smoothCorners ?? this.smoothCorners,
-        trackPadding: trackPadding ?? this.trackPadding,
-        segmentPadding: segmentPadding ?? this.segmentPadding,
-        hoverColor: hoverColor ?? this.hoverColor,
-        focusColor: focusColor ?? this.focusColor,
-        focusOutlineColor: focusOutlineColor ?? this.focusOutlineColor,
-        focusOutlineWidth: focusOutlineWidth ?? this.focusOutlineWidth,
-        height: height ?? this.height,
-        iconSize: iconSize ?? this.iconSize,
-        iconLabelSpacing: iconLabelSpacing ?? this.iconLabelSpacing,
-        indicatorShadows: indicatorShadows ?? this.indicatorShadows,
-      );
+  }) => SegmentedControlTheme(
+    trackColor: trackColor ?? this.trackColor,
+    borderColor: borderColor ?? this.borderColor,
+    indicatorColor: indicatorColor ?? this.indicatorColor,
+    selectedLabelColor: selectedLabelColor ?? this.selectedLabelColor,
+    unselectedLabelColor: unselectedLabelColor ?? this.unselectedLabelColor,
+    disabledLabelColor: disabledLabelColor ?? this.disabledLabelColor,
+    labelStyle: labelStyle ?? this.labelStyle,
+    selectedLabelStyle: selectedLabelStyle ?? this.selectedLabelStyle,
+    fontFamily: fontFamily ?? this.fontFamily,
+    borderWidth: borderWidth ?? this.borderWidth,
+    trackRadius: trackRadius ?? this.trackRadius,
+    indicatorRadius: indicatorRadius ?? this.indicatorRadius,
+    trackShape: trackShape ?? this.trackShape,
+    indicatorShape: indicatorShape ?? this.indicatorShape,
+    smoothCorners: smoothCorners ?? this.smoothCorners,
+    trackPadding: trackPadding ?? this.trackPadding,
+    segmentPadding: segmentPadding ?? this.segmentPadding,
+    hoverColor: hoverColor ?? this.hoverColor,
+    focusColor: focusColor ?? this.focusColor,
+    focusOutlineColor: focusOutlineColor ?? this.focusOutlineColor,
+    focusOutlineWidth: focusOutlineWidth ?? this.focusOutlineWidth,
+    height: height ?? this.height,
+    iconSize: iconSize ?? this.iconSize,
+    iconLabelSpacing: iconLabelSpacing ?? this.iconLabelSpacing,
+    indicatorShadows: indicatorShadows ?? this.indicatorShadows,
+  );
 
   @override
   SegmentedControlTheme lerp(SegmentedControlTheme? other, double t) {
@@ -301,21 +302,28 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
           Color.lerp(indicatorColor, other.indicatorColor, t) ?? indicatorColor,
       selectedLabelColor:
           Color.lerp(selectedLabelColor, other.selectedLabelColor, t) ??
-              selectedLabelColor,
+          selectedLabelColor,
       unselectedLabelColor:
           Color.lerp(unselectedLabelColor, other.unselectedLabelColor, t) ??
-              unselectedLabelColor,
-      disabledLabelColor:
-          Color.lerp(disabledLabelColor, other.disabledLabelColor, t),
+          unselectedLabelColor,
+      disabledLabelColor: Color.lerp(
+        disabledLabelColor,
+        other.disabledLabelColor,
+        t,
+      ),
       labelStyle: TextStyle.lerp(labelStyle, other.labelStyle, t),
-      selectedLabelStyle:
-          TextStyle.lerp(selectedLabelStyle, other.selectedLabelStyle, t),
+      selectedLabelStyle: TextStyle.lerp(
+        selectedLabelStyle,
+        other.selectedLabelStyle,
+        t,
+      ),
       fontFamily: t < 0.5 ? fontFamily : other.fontFamily,
       borderWidth: lerpDouble(borderWidth, other.borderWidth, t),
       trackRadius:
           BorderRadiusGeometry.lerp(trackRadius, other.trackRadius, t) ??
-              trackRadius,
-      indicatorRadius: BorderRadiusGeometry.lerp(
+          trackRadius,
+      indicatorRadius:
+          BorderRadiusGeometry.lerp(
             indicatorRadius,
             other.indicatorRadius,
             t,
@@ -326,23 +334,28 @@ class SegmentedControlTheme extends ThemeExtension<SegmentedControlTheme> {
       smoothCorners: t < 0.5 ? smoothCorners : other.smoothCorners,
       trackPadding:
           EdgeInsetsGeometry.lerp(trackPadding, other.trackPadding, t) ??
-              trackPadding,
+          trackPadding,
       segmentPadding:
           EdgeInsetsGeometry.lerp(segmentPadding, other.segmentPadding, t) ??
-              segmentPadding,
+          segmentPadding,
       hoverColor: Color.lerp(hoverColor, other.hoverColor, t),
       focusColor: Color.lerp(focusColor, other.focusColor, t),
-      focusOutlineColor:
-          Color.lerp(focusOutlineColor, other.focusOutlineColor, t),
-      focusOutlineWidth:
-          lerpDouble(focusOutlineWidth, other.focusOutlineWidth, t),
+      focusOutlineColor: Color.lerp(
+        focusOutlineColor,
+        other.focusOutlineColor,
+        t,
+      ),
+      focusOutlineWidth: lerpDouble(
+        focusOutlineWidth,
+        other.focusOutlineWidth,
+        t,
+      ),
       height: lerpDouble(height, other.height, t),
       iconSize: lerpDouble(iconSize, other.iconSize, t),
-      iconLabelSpacing:
-          lerpDouble(iconLabelSpacing, other.iconLabelSpacing, t),
+      iconLabelSpacing: lerpDouble(iconLabelSpacing, other.iconLabelSpacing, t),
       indicatorShadows:
           BoxShadow.lerpList(indicatorShadows, other.indicatorShadows, t) ??
-              indicatorShadows,
+          indicatorShadows,
     );
   }
 

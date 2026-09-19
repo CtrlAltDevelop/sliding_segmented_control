@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sliding_segmented_control/sliding_segmented_control.dart';
+import 'package:sliding_segmented_control/src/segmented_track.dart';
 
 void main() {
   Widget host(
@@ -11,18 +12,17 @@ void main() {
     TextDirection direction = TextDirection.ltr,
     SegmentedControlTheme? theme,
     double? width = 300,
-  }) =>
-      MaterialApp(
-        theme: ThemeData(extensions: theme == null ? const [] : [theme]),
-        home: Directionality(
-          textDirection: direction,
-          child: Scaffold(
-            body: Center(
-              child: width == null ? child : SizedBox(width: width, child: child),
-            ),
-          ),
+  }) => MaterialApp(
+    theme: ThemeData(extensions: theme == null ? const [] : [theme]),
+    home: Directionality(
+      textDirection: direction,
+      child: Scaffold(
+        body: Center(
+          child: width == null ? child : SizedBox(width: width, child: child),
         ),
-      );
+      ),
+    ),
+  );
 
   final indicator = find.byKey(SlidingSegmentedControl.indicatorKey);
   final indicatorBox = find.descendant(
@@ -38,11 +38,15 @@ void main() {
 
   group('SlidingSegmentedControl', () {
     testWidgets('renders every label', (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
 
       expect(find.text('One'), findsOneWidget);
       expect(find.text('Two'), findsOneWidget);
@@ -51,11 +55,15 @@ void main() {
 
     testWidgets('reports the tapped index', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
 
       await tester.tap(find.text('Three'));
       expect(taps, [2]);
@@ -63,11 +71,15 @@ void main() {
 
     testWidgets('ignores a tap on the selected segment', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 1,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 1,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
 
       await tester.tap(find.text('Two'));
       expect(taps, isEmpty);
@@ -75,14 +87,18 @@ void main() {
 
     testWidgets('ignores a tap on a disabled segment', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: const [
-          Segment(label: 'On'),
-          Segment(label: 'Off', enabled: false),
-        ],
-        selectedIndex: 0,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: const [
+              Segment(label: 'On'),
+              Segment(label: 'Off', enabled: false),
+            ],
+            selectedIndex: 0,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
 
       await tester.tap(find.text('Off'));
       expect(taps, isEmpty);
@@ -90,24 +106,31 @@ void main() {
 
     testWidgets('ignores taps while the control is disabled', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        enabled: false,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            enabled: false,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
 
       await tester.tap(find.text('Two'));
       expect(taps, isEmpty);
     });
 
-    testWidgets('the indicator sits over the selected segment',
-        (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 2,
-        onSegmentChanged: (_) {},
-      )));
+    testWidgets('the indicator sits over the selected segment', (tester) async {
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 2,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(
@@ -116,16 +139,19 @@ void main() {
       );
     });
 
-    testWidgets('the indicator starts from the right under RTL',
-        (tester) async {
-      await tester.pumpWidget(host(
-        SlidingSegmentedControl(
-          segments: segments,
-          selectedIndex: 0,
-          onSegmentChanged: (_) {},
+    testWidgets('the indicator starts from the right under RTL', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+          ),
+          direction: TextDirection.rtl,
         ),
-        direction: TextDirection.rtl,
-      ));
+      );
       await tester.pumpAndSettle();
 
       final pill = tester.getRect(indicator);
@@ -140,11 +166,15 @@ void main() {
 
     testWidgets('exposes each segment as a selectable button', (tester) async {
       final handle = tester.ensureSemantics();
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 1,
-        onSegmentChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 1,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
 
       expect(
         tester.getSemantics(find.text('Two')),
@@ -162,17 +192,19 @@ void main() {
     });
 
     testWidgets('per-instance colours win over the theme', (tester) async {
-      await tester.pumpWidget(host(
-        SlidingSegmentedControl(
-          segments: segments,
-          selectedIndex: 0,
-          onSegmentChanged: (_) {},
-          indicatorColor: const Color(0xFF00FF00),
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+            indicatorColor: const Color(0xFF00FF00),
+          ),
+          theme: SegmentedControlTheme.fromScheme(
+            ColorScheme.fromSeed(seedColor: const Color(0xFF3B82F6)),
+          ),
         ),
-        theme: SegmentedControlTheme.fromScheme(
-          ColorScheme.fromSeed(seedColor: const Color(0xFF3B82F6)),
-        ),
-      ));
+      );
 
       final decorated = tester.widget<DecoratedBox>(indicatorBox);
       final shape = decorated.decoration as ShapeDecoration;
@@ -189,9 +221,9 @@ void main() {
 
   group('SegmentedBody', () {
     List<SegmentPage> pages() => [
-          SegmentPage.of(label: 'One', child: const Text('body one')),
-          SegmentPage.of(label: 'Two', child: const Text('body two')),
-        ];
+      SegmentPage.of(label: 'One', child: const Text('body one')),
+      SegmentPage.of(label: 'Two', child: const Text('body two')),
+    ];
 
     testWidgets('shows only the selected body', (tester) async {
       await tester.pumpWidget(host(SegmentedBody(pages: pages())));
@@ -220,11 +252,15 @@ void main() {
 
     testWidgets('a controlled body does not move on its own', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SegmentedBody(
-        pages: pages(),
-        selectedIndex: 0,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SegmentedBody(
+            pages: pages(),
+            selectedIndex: 0,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
 
       await tester.tap(find.text('Two'));
       await tester.pumpAndSettle();
@@ -233,16 +269,21 @@ void main() {
       expect(find.text('body one'), findsOneWidget);
     });
 
-    testWidgets('clamps its own index when the page list shrinks',
-        (tester) async {
+    testWidgets('clamps its own index when the page list shrinks', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         host(SegmentedBody(pages: pages(), initialIndex: 1)),
       );
-      await tester.pumpWidget(host(SegmentedBody(
-        pages: [
-          SegmentPage.of(label: 'One', child: const Text('body one')),
-        ],
-      )));
+      await tester.pumpWidget(
+        host(
+          SegmentedBody(
+            pages: [
+              SegmentPage.of(label: 'One', child: const Text('body one')),
+            ],
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('body one'), findsOneWidget);
@@ -252,10 +293,10 @@ void main() {
 
   group('SegmentedBody transitions', () {
     List<SegmentPage> pages() => [
-          SegmentPage.of(label: 'One', child: const Text('body one')),
-          SegmentPage.of(label: 'Two', child: const Text('body two')),
-          SegmentPage.of(label: 'Three', child: const Text('body three')),
-        ];
+      SegmentPage.of(label: 'One', child: const Text('body one')),
+      SegmentPage.of(label: 'Two', child: const Text('body two')),
+      SegmentPage.of(label: 'Three', child: const Text('body three')),
+    ];
 
     /// Where the body sits, part-way through the switch.
     Future<double> bodyOffsetMidSwitch(
@@ -269,8 +310,9 @@ void main() {
       return tester.getRect(find.text(bodyText)).center.dx;
     }
 
-    testWidgets('fade is the default and does not move the body',
-        (tester) async {
+    testWidgets('fade is the default and does not move the body', (
+      tester,
+    ) async {
       await tester.pumpWidget(host(SegmentedBody(pages: pages())));
       final settled = tester.getRect(find.text('body one')).center.dx;
 
@@ -279,12 +321,17 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('slide enters from the end side when moving forward',
-        (tester) async {
-      await tester.pumpWidget(host(SegmentedBody(
-        pages: pages(),
-        bodyTransition: SegmentedBodyTransition.slide,
-      )));
+    testWidgets('slide enters from the end side when moving forward', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SegmentedBody(
+            pages: pages(),
+            bodyTransition: SegmentedBodyTransition.slide,
+          ),
+        ),
+      );
       final settled = tester.getRect(find.text('body one')).center.dx;
 
       final moving = await bodyOffsetMidSwitch(tester, 'Two', 'body two');
@@ -296,13 +343,18 @@ void main() {
       );
     });
 
-    testWidgets('slide enters from the start side when moving back',
-        (tester) async {
-      await tester.pumpWidget(host(SegmentedBody(
-        pages: pages(),
-        initialIndex: 2,
-        bodyTransition: SegmentedBodyTransition.slide,
-      )));
+    testWidgets('slide enters from the start side when moving back', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SegmentedBody(
+            pages: pages(),
+            initialIndex: 2,
+            bodyTransition: SegmentedBodyTransition.slide,
+          ),
+        ),
+      );
       final settled = tester.getRect(find.text('body three')).center.dx;
 
       final moving = await bodyOffsetMidSwitch(tester, 'One', 'body one');
@@ -311,13 +363,15 @@ void main() {
     });
 
     testWidgets('slide mirrors under RTL', (tester) async {
-      await tester.pumpWidget(host(
-        SegmentedBody(
-          pages: pages(),
-          bodyTransition: SegmentedBodyTransition.slide,
+      await tester.pumpWidget(
+        host(
+          SegmentedBody(
+            pages: pages(),
+            bodyTransition: SegmentedBodyTransition.slide,
+          ),
+          direction: TextDirection.rtl,
         ),
-        direction: TextDirection.rtl,
-      ));
+      );
       final settled = tester.getRect(find.text('body one')).center.dx;
 
       // Forward under RTL means the end side, which is the left.
@@ -327,10 +381,14 @@ void main() {
     });
 
     testWidgets('the outgoing body leaves the other way', (tester) async {
-      await tester.pumpWidget(host(SegmentedBody(
-        pages: pages(),
-        bodyTransition: SegmentedBodyTransition.slide,
-      )));
+      await tester.pumpWidget(
+        host(
+          SegmentedBody(
+            pages: pages(),
+            bodyTransition: SegmentedBodyTransition.slide,
+          ),
+        ),
+      );
       final settled = tester.getRect(find.text('body one')).center.dx;
 
       await tester.tap(find.text('Two'));
@@ -338,21 +396,28 @@ void main() {
       await tester.pump(const Duration(milliseconds: 60));
 
       // Incoming from the right, so the outgoing one must be heading left.
-      expect(tester.getRect(find.text('body one')).center.dx,
-          lessThan(settled));
-      expect(tester.getRect(find.text('body two')).center.dx,
-          greaterThan(settled));
+      expect(
+        tester.getRect(find.text('body one')).center.dx,
+        lessThan(settled),
+      );
+      expect(
+        tester.getRect(find.text('body two')).center.dx,
+        greaterThan(settled),
+      );
       await tester.pumpAndSettle();
     });
 
-    testWidgets('a controlled body slides the way the host moved it',
-        (tester) async {
-      Widget at(int index) => host(SegmentedBody(
-            pages: pages(),
-            selectedIndex: index,
-            bodyTransition: SegmentedBodyTransition.slide,
-            onSegmentChanged: (_) {},
-          ));
+    testWidgets('a controlled body slides the way the host moved it', (
+      tester,
+    ) async {
+      Widget at(int index) => host(
+        SegmentedBody(
+          pages: pages(),
+          selectedIndex: index,
+          bodyTransition: SegmentedBodyTransition.slide,
+          onSegmentChanged: (_) {},
+        ),
+      );
 
       await tester.pumpWidget(at(2));
       final settled = tester.getRect(find.text('body three')).center.dx;
@@ -360,16 +425,22 @@ void main() {
       await tester.pumpWidget(at(0));
       await tester.pump(const Duration(milliseconds: 60));
 
-      expect(tester.getRect(find.text('body one')).center.dx,
-          lessThan(settled));
+      expect(
+        tester.getRect(find.text('body one')).center.dx,
+        lessThan(settled),
+      );
       await tester.pumpAndSettle();
     });
 
     testWidgets('scale settles the body at full size', (tester) async {
-      await tester.pumpWidget(host(SegmentedBody(
-        pages: pages(),
-        bodyTransition: SegmentedBodyTransition.scale,
-      )));
+      await tester.pumpWidget(
+        host(
+          SegmentedBody(
+            pages: pages(),
+            bodyTransition: SegmentedBodyTransition.scale,
+          ),
+        ),
+      );
 
       await tester.tap(find.text('Two'));
       await tester.pump();
@@ -381,17 +452,22 @@ void main() {
       expect(growing, lessThan(settled));
     });
 
-    testWidgets('a custom transitionBuilder wins over bodyTransition',
-        (tester) async {
+    testWidgets('a custom transitionBuilder wins over bodyTransition', (
+      tester,
+    ) async {
       var used = 0;
-      await tester.pumpWidget(host(SegmentedBody(
-        pages: pages(),
-        bodyTransition: SegmentedBodyTransition.slide,
-        transitionBuilder: (child, animation) {
-          used++;
-          return FadeTransition(opacity: animation, child: child);
-        },
-      )));
+      await tester.pumpWidget(
+        host(
+          SegmentedBody(
+            pages: pages(),
+            bodyTransition: SegmentedBodyTransition.slide,
+            transitionBuilder: (child, animation) {
+              used++;
+              return FadeTransition(opacity: animation, child: child);
+            },
+          ),
+        ),
+      );
 
       expect(used, greaterThan(0));
       expect(
@@ -405,15 +481,20 @@ void main() {
   });
 
   group('SegmentedControlTheme', () {
-    testWidgets('falls back to the ColorScheme with no extension registered',
-        (tester) async {
+    testWidgets('falls back to the ColorScheme with no extension registered', (
+      tester,
+    ) async {
       late SegmentedControlTheme resolved;
-      await tester.pumpWidget(MaterialApp(
-        home: Builder(builder: (context) {
-          resolved = SegmentedControlTheme.of(context);
-          return const SizedBox();
-        }),
-      ));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              resolved = SegmentedControlTheme.of(context);
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
 
       expect(resolved.indicatorColor, isNotNull);
       expect(resolved.height, 44);
@@ -457,12 +538,16 @@ void main() {
     });
 
     testWidgets('per-instance radii win over the theme', (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-        indicatorRadius: BorderRadius.circular(18),
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+            indicatorRadius: BorderRadius.circular(18),
+          ),
+        ),
+      );
 
       final decorated = tester.widget<DecoratedBox>(indicatorBox);
       final shape = (decorated.decoration as ShapeDecoration).shape;
@@ -472,14 +557,19 @@ void main() {
       );
     });
 
-    testWidgets('a per-instance shape replaces the default entirely',
-        (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-        indicatorShape: const StadiumBorder(),
-      )));
+    testWidgets('a per-instance shape replaces the default entirely', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+            indicatorShape: const StadiumBorder(),
+          ),
+        ),
+      );
 
       final decorated = tester.widget<DecoratedBox>(indicatorBox);
       expect(
@@ -508,10 +598,7 @@ void main() {
         unselectedLabelColor: Color(0xFF000000),
         height: 40,
       );
-      final b = a.copyWith(
-        indicatorColor: const Color(0xFFFFFFFF),
-        height: 60,
-      );
+      final b = a.copyWith(indicatorColor: const Color(0xFFFFFFFF), height: 60);
 
       final mid = a.lerp(b, 0.5);
       expect(mid.height, 50);
@@ -539,12 +626,16 @@ void main() {
   group('keyboard', () {
     testWidgets('an arrow key moves the selection along', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        autofocus: true,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            autofocus: true,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
@@ -553,15 +644,17 @@ void main() {
 
     testWidgets('the arrow keys mirror under RTL', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(
-        SlidingSegmentedControl(
-          segments: segments,
-          selectedIndex: 1,
-          autofocus: true,
-          onSegmentChanged: taps.add,
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 1,
+            autofocus: true,
+            onSegmentChanged: taps.add,
+          ),
+          direction: TextDirection.rtl,
         ),
-        direction: TextDirection.rtl,
-      ));
+      );
       await tester.pump();
 
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
@@ -570,46 +663,60 @@ void main() {
 
     testWidgets('an arrow key steps over a disabled segment', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: const [
-          Segment(label: 'One'),
-          Segment(label: 'Two', enabled: false),
-          Segment(label: 'Three'),
-        ],
-        selectedIndex: 0,
-        autofocus: true,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: const [
+              Segment(label: 'One'),
+              Segment(label: 'Two', enabled: false),
+              Segment(label: 'Three'),
+            ],
+            selectedIndex: 0,
+            autofocus: true,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
       expect(taps, [2]);
     });
 
-    testWidgets('an arrow key stops at the end rather than wrapping',
-        (tester) async {
+    testWidgets('an arrow key stops at the end rather than wrapping', (
+      tester,
+    ) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 2,
-        autofocus: true,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 2,
+            autofocus: true,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
       expect(taps, isEmpty);
     });
 
-    testWidgets('home and end jump to the first and last segment',
-        (tester) async {
+    testWidgets('home and end jump to the first and last segment', (
+      tester,
+    ) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 1,
-        autofocus: true,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 1,
+            autofocus: true,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.sendKeyEvent(LogicalKeyboardKey.end);
@@ -619,12 +726,16 @@ void main() {
 
     testWidgets('enter activates the focused segment', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        autofocus: true,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            autofocus: true,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
       await tester.pump();
 
       // The host holds selectedIndex at 0, so focus lands on segment 1 while
@@ -635,16 +746,22 @@ void main() {
     });
 
     testWidgets('the focused segment draws a focus ring', (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        autofocus: true,
-        onSegmentChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            autofocus: true,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
       await tester.pump();
 
-      final rings = tester.widgetList<DecoratedBox>(find.byType(DecoratedBox)).where(
+      final rings = tester
+          .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+          .where(
             (box) =>
                 box.decoration is ShapeDecoration &&
                 ((box.decoration as ShapeDecoration).shape as OutlinedBorder)
@@ -656,11 +773,15 @@ void main() {
     });
 
     testWidgets('only the selected segment is a tab stop', (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 1,
-        onSegmentChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 1,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
 
       final nodes = tester
           .widgetList<Focus>(find.byType(Focus))
@@ -677,13 +798,17 @@ void main() {
 
     testWidgets('a disabled control takes no keys', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        enabled: false,
-        autofocus: true,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            enabled: false,
+            autofocus: true,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
       await tester.pump();
 
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
@@ -698,15 +823,18 @@ void main() {
       // framework checks for stray debug flags before tear-downs run.
       debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
       const hover = Color(0xFF123456);
-      await tester.pumpWidget(host(
-        SlidingSegmentedControl(
-          segments: segments,
-          selectedIndex: 0,
-          onSegmentChanged: (_) {},
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+          ),
+          theme: SegmentedControlTheme.fromScheme(
+            const ColorScheme.light(),
+          ).copyWith(hoverColor: hover),
         ),
-        theme: SegmentedControlTheme.fromScheme(const ColorScheme.light())
-            .copyWith(hoverColor: hover),
-      ));
+      );
 
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await mouse.addPointer(location: Offset.zero);
@@ -717,23 +845,30 @@ void main() {
 
       final overlays = tester
           .widgetList<DecoratedBox>(find.byType(DecoratedBox))
-          .where((box) =>
-              box.decoration is ShapeDecoration &&
-              (box.decoration as ShapeDecoration).color == hover);
+          .where(
+            (box) =>
+                box.decoration is ShapeDecoration &&
+                (box.decoration as ShapeDecoration).color == hover,
+          );
       expect(overlays, hasLength(1));
       debugDefaultTargetPlatformOverride = null;
     });
   });
 
   group('dragging', () {
-    testWidgets('dragging the pill picks the segment it lands on',
-        (tester) async {
+    testWidgets('dragging the pill picks the segment it lands on', (
+      tester,
+    ) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
 
       await tester.drag(
         find.byKey(SlidingSegmentedControl.segmentKey(0)),
@@ -745,11 +880,15 @@ void main() {
 
     testWidgets('a short drag settles back where it started', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
 
       await tester.drag(
         find.byKey(SlidingSegmentedControl.segmentKey(0)),
@@ -760,11 +899,15 @@ void main() {
     });
 
     testWidgets('the indicator follows the pointer mid-drag', (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
       final start = tester.getRect(indicator).left;
 
       final gesture = await tester.startGesture(
@@ -778,14 +921,19 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('a drag that does not start on the pill is ignored',
-        (tester) async {
+    testWidgets('a drag that does not start on the pill is ignored', (
+      tester,
+    ) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
 
       await tester.drag(
         find.byKey(SlidingSegmentedControl.segmentKey(2)),
@@ -797,12 +945,16 @@ void main() {
 
     testWidgets('enableDrag: false leaves dragging alone', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: segments,
-        selectedIndex: 0,
-        enableDrag: false,
-        onSegmentChanged: taps.add,
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            enableDrag: false,
+            onSegmentChanged: taps.add,
+          ),
+        ),
+      );
 
       await tester.drag(
         find.byKey(SlidingSegmentedControl.segmentKey(0)),
@@ -814,14 +966,16 @@ void main() {
 
     testWidgets('dragging runs the other way under RTL', (tester) async {
       final taps = <int>[];
-      await tester.pumpWidget(host(
-        SlidingSegmentedControl(
-          segments: segments,
-          selectedIndex: 0,
-          onSegmentChanged: taps.add,
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: segments,
+            selectedIndex: 0,
+            onSegmentChanged: taps.add,
+          ),
+          direction: TextDirection.rtl,
         ),
-        direction: TextDirection.rtl,
-      ));
+      );
 
       await tester.drag(
         find.byKey(SlidingSegmentedControl.segmentKey(0)),
@@ -840,11 +994,15 @@ void main() {
     ];
 
     testWidgets('equal segments share the width', (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: long,
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: long,
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
 
       expect(
         segmentRect(tester, 0).width,
@@ -852,17 +1010,20 @@ void main() {
       );
     });
 
-    testWidgets('intrinsic segments are as wide as their content',
-        (tester) async {
-      await tester.pumpWidget(host(
-        SlidingSegmentedControl(
-          segments: long,
-          selectedIndex: 0,
-          sizing: SegmentSizing.intrinsic,
-          onSegmentChanged: (_) {},
+    testWidgets('intrinsic segments are as wide as their content', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: long,
+            selectedIndex: 0,
+            sizing: SegmentSizing.intrinsic,
+            onSegmentChanged: (_) {},
+          ),
+          width: null,
         ),
-        width: null,
-      ));
+      );
 
       expect(
         segmentRect(tester, 1).width,
@@ -870,17 +1031,20 @@ void main() {
       );
     });
 
-    testWidgets('an intrinsic control shrink-wraps its segments',
-        (tester) async {
-      await tester.pumpWidget(host(
-        SlidingSegmentedControl(
-          segments: long,
-          selectedIndex: 0,
-          sizing: SegmentSizing.intrinsic,
-          onSegmentChanged: (_) {},
+    testWidgets('an intrinsic control shrink-wraps its segments', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: long,
+            selectedIndex: 0,
+            sizing: SegmentSizing.intrinsic,
+            onSegmentChanged: (_) {},
+          ),
+          width: null,
         ),
-        width: null,
-      ));
+      );
 
       final control = tester.getSize(find.byType(SlidingSegmentedControl));
       final segmentsWidth = [
@@ -891,32 +1055,38 @@ void main() {
       expect(control.width, closeTo(segmentsWidth + 10, 0.01));
     });
 
-    testWidgets('the indicator takes the selected segment\'s width',
-        (tester) async {
-      await tester.pumpWidget(host(
-        SlidingSegmentedControl(
-          segments: long,
-          selectedIndex: 1,
-          sizing: SegmentSizing.intrinsic,
-          onSegmentChanged: (_) {},
+    testWidgets('the indicator takes the selected segment\'s width', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: long,
+            selectedIndex: 1,
+            sizing: SegmentSizing.intrinsic,
+            onSegmentChanged: (_) {},
+          ),
+          width: null,
         ),
-        width: null,
-      ));
+      );
 
       expect(tester.getRect(indicator), segmentRect(tester, 1));
     });
 
-    testWidgets('intrinsic segments are squeezed rather than overflowing',
-        (tester) async {
-      await tester.pumpWidget(host(
-        SlidingSegmentedControl(
-          segments: long,
-          selectedIndex: 0,
-          sizing: SegmentSizing.intrinsic,
-          onSegmentChanged: (_) {},
+    testWidgets('intrinsic segments are squeezed rather than overflowing', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: long,
+            selectedIndex: 0,
+            sizing: SegmentSizing.intrinsic,
+            onSegmentChanged: (_) {},
+          ),
+          width: 120,
         ),
-        width: 120,
-      ));
+      );
 
       expect(tester.takeException(), isNull);
       final total = [
@@ -925,22 +1095,27 @@ void main() {
       expect(total, closeTo(110, 0.01));
     });
 
-    testWidgets('a scrollable control lets its segments overflow',
-        (tester) async {
-      final many = [
-        for (var i = 0; i < 10; i++) Segment(label: 'Segment $i'),
-      ];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: many,
-        selectedIndex: 0,
-        sizing: SegmentSizing.scrollable,
-        onSegmentChanged: (_) {},
-      )));
+    testWidgets('a scrollable control lets its segments overflow', (
+      tester,
+    ) async {
+      final many = [for (var i = 0; i < 10; i++) Segment(label: 'Segment $i')];
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: many,
+            selectedIndex: 0,
+            sizing: SegmentSizing.scrollable,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(SingleChildScrollView), findsOneWidget);
       expect(
-        tester.state<ScrollableState>(find.byType(Scrollable)).position
+        tester
+            .state<ScrollableState>(find.byType(Scrollable))
+            .position
             .maxScrollExtent,
         greaterThan(0),
         reason: 'the segments are wider than the track, and scroll',
@@ -948,17 +1123,20 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a scrollable control brings the selection into view',
-        (tester) async {
-      final many = [
-        for (var i = 0; i < 10; i++) Segment(label: 'Segment $i'),
-      ];
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: many,
-        selectedIndex: 9,
-        sizing: SegmentSizing.scrollable,
-        onSegmentChanged: (_) {},
-      )));
+    testWidgets('a scrollable control brings the selection into view', (
+      tester,
+    ) async {
+      final many = [for (var i = 0; i < 10; i++) Segment(label: 'Segment $i')];
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: many,
+            selectedIndex: 9,
+            sizing: SegmentSizing.scrollable,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
       await tester.pumpAndSettle();
 
       final control = tester.getRect(find.byType(SlidingSegmentedControl));
@@ -969,16 +1147,21 @@ void main() {
   });
 
   group('Segment', () {
-    testWidgets('a child replaces the label but not the semantics',
-        (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: const [
-          Segment(label: 'One', child: Text('Custom')),
-          Segment(label: 'Two'),
-        ],
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-      )));
+    testWidgets('a child replaces the label but not the semantics', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: const [
+              Segment(label: 'One', child: Text('Custom')),
+              Segment(label: 'Two'),
+            ],
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
 
       expect(find.text('Custom'), findsOneWidget);
       expect(find.text('One'), findsNothing);
@@ -991,14 +1174,18 @@ void main() {
     });
 
     testWidgets('a badge is shown after the label', (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: const [
-          Segment(label: 'Inbox', badge: Text('3')),
-          Segment(label: 'Sent'),
-        ],
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: const [
+              Segment(label: 'Inbox', badge: Text('3')),
+              Segment(label: 'Sent'),
+            ],
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+      );
 
       expect(find.text('3'), findsOneWidget);
       expect(
@@ -1008,15 +1195,19 @@ void main() {
     });
 
     testWidgets('an iconWidget takes the segment\'s colour', (tester) async {
-      await tester.pumpWidget(host(SlidingSegmentedControl(
-        segments: const [
-          Segment(label: 'One', iconWidget: Icon(Icons.star)),
-          Segment(label: 'Two'),
-        ],
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-        selectedLabelColor: const Color(0xFF00FF00),
-      )));
+      await tester.pumpWidget(
+        host(
+          SlidingSegmentedControl(
+            segments: const [
+              Segment(label: 'One', iconWidget: Icon(Icons.star)),
+              Segment(label: 'Two'),
+            ],
+            selectedIndex: 0,
+            onSegmentChanged: (_) {},
+            selectedLabelColor: const Color(0xFF00FF00),
+          ),
+        ),
+      );
 
       final icon = tester.widget<Icon>(find.byIcon(Icons.star));
       expect(
@@ -1041,13 +1232,125 @@ void main() {
       );
       const body = Text('a');
       expect(
-        const SegmentPage(segment: Segment(label: 'One'), child: body),
-        const SegmentPage(segment: Segment(label: 'One'), child: body),
+        const SegmentPage(
+          segment: Segment(label: 'One'),
+          child: body,
+        ),
+        const SegmentPage(
+          segment: Segment(label: 'One'),
+          child: body,
+        ),
       );
       expect(
-        const SegmentPage(segment: Segment(label: 'One'), child: body),
-        isNot(const SegmentPage(segment: Segment(label: 'Two'), child: body)),
+        const SegmentPage(
+          segment: Segment(label: 'One'),
+          child: body,
+        ),
+        isNot(
+          const SegmentPage(
+            segment: Segment(label: 'Two'),
+            child: body,
+          ),
+        ),
       );
+    });
+  });
+
+  group('robustness', () {
+    Widget control({
+      List<Segment> items = segments,
+      int selected = 0,
+      bool enabled = true,
+    }) => host(
+      SlidingSegmentedControl(
+        segments: items,
+        selectedIndex: selected,
+        enabled: enabled,
+        onSegmentChanged: (_) {},
+      ),
+    );
+
+    testWidgets('a cancelled drag lets the pill settle again', (tester) async {
+      await tester.pumpWidget(control());
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byKey(SlidingSegmentedControl.segmentKey(0))),
+      );
+      await gesture.moveBy(const Offset(60, 0));
+      await tester.pump();
+      await gesture.cancel();
+      await tester.pumpAndSettle();
+
+      final pill = tester.getCenter(indicatorBox);
+      final first = tester.getCenter(
+        find.byKey(SlidingSegmentedControl.segmentKey(0)),
+      );
+      expect(pill.dx, closeTo(first.dx, 0.5));
+
+      // A later selection change animates rather than being ignored.
+      await tester.pumpWidget(control(selected: 2));
+      await tester.pumpAndSettle();
+      final third = tester.getCenter(
+        find.byKey(SlidingSegmentedControl.segmentKey(2)),
+      );
+      expect(tester.getCenter(indicatorBox).dx, closeTo(third.dx, 0.5));
+    });
+
+    testWidgets('disabling the control mid-drag drops the drag', (
+      tester,
+    ) async {
+      await tester.pumpWidget(control());
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byKey(SlidingSegmentedControl.segmentKey(0))),
+      );
+      await gesture.moveBy(const Offset(60, 0));
+      await tester.pump();
+      await tester.pumpWidget(control(enabled: false));
+      await tester.pumpAndSettle();
+
+      final first = tester.getCenter(
+        find.byKey(SlidingSegmentedControl.segmentKey(0)),
+      );
+      expect(tester.getCenter(indicatorBox).dx, closeTo(first.dx, 0.5));
+      await gesture.up();
+    });
+
+    testWidgets('fewer segments while one has focus does not throw', (
+      tester,
+    ) async {
+      await tester.pumpWidget(control(selected: 2));
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+
+      await tester.pumpWidget(control(items: segments.sublist(0, 2)));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.text('Three'), findsNothing);
+    });
+
+    testWidgets('the track reports a dry layout equal to its real size', (
+      tester,
+    ) async {
+      for (final sizing in SegmentSizing.values) {
+        await tester.pumpWidget(
+          host(
+            SlidingSegmentedControl(
+              segments: segments,
+              selectedIndex: 0,
+              sizing: sizing,
+              onSegmentChanged: (_) {},
+            ),
+            width: sizing == SegmentSizing.intrinsic ? null : 300,
+          ),
+        );
+        final track = tester.renderObject<RenderBox>(
+          find.byType(SegmentedTrack),
+        );
+        expect(
+          track.getDryLayout(track.constraints),
+          track.size,
+          reason: '$sizing',
+        );
+      }
     });
   });
 }

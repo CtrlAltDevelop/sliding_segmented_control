@@ -241,17 +241,18 @@ class _Count extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-        decoration: ShapeDecoration(
-          color: theme.colorScheme.tertiaryContainer,
-          shape: const StadiumBorder(),
-        ),
-        child: Text(
-          '$value',
-          style: theme.textTheme.labelSmall
-              ?.copyWith(color: theme.colorScheme.onTertiaryContainer),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+    decoration: ShapeDecoration(
+      color: theme.colorScheme.tertiaryContainer,
+      shape: const StadiumBorder(),
+    ),
+    child: Text(
+      '$value',
+      style: theme.textTheme.labelSmall?.copyWith(
+        color: theme.colorScheme.onTertiaryContainer,
+      ),
+    ),
+  );
 }
 
 class _SectionTitle extends StatelessWidget {
@@ -261,7 +262,7 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(top: 28, bottom: 10),
-        child: Text(text, style: Theme.of(context).textTheme.titleSmall),
-      );
+    padding: const EdgeInsets.only(top: 28, bottom: 10),
+    child: Text(text, style: Theme.of(context).textTheme.titleSmall),
+  );
 }

@@ -23,9 +23,9 @@ Future<void> _loadFonts() async {
   Future<void> load(String family, String path) async {
     final file = File(path);
     if (!file.existsSync()) return;
-    await (FontLoader(family)
-          ..addFont(file.readAsBytes().then((b) => ByteData.view(b.buffer))))
-        .load();
+    await (FontLoader(
+      family,
+    )..addFont(file.readAsBytes().then((b) => ByteData.view(b.buffer)))).load();
   }
 
   await load('Roboto', '$fonts/Roboto-Regular.ttf');
@@ -34,22 +34,22 @@ Future<void> _loadFonts() async {
 
 /// The widgets on a plain backdrop, at the width they are shown at.
 Widget _canvas(List<Widget> children) => MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: buildDemoTheme(Brightness.light),
-      home: Scaffold(
-        backgroundColor: const Color(0xFFFFFFFF),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 20,
-              children: children,
-            ),
-          ),
+  debugShowCheckedModeBanner: false,
+  theme: buildDemoTheme(Brightness.light),
+  home: Scaffold(
+    backgroundColor: const Color(0xFFFFFFFF),
+    body: Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 20,
+          children: children,
         ),
       ),
-    );
+    ),
+  ),
+);
 
 void main() {
   setUpAll(_loadFonts);
@@ -60,38 +60,40 @@ void main() {
       ..devicePixelRatio = 2;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(_canvas([
-      SlidingSegmentedControl(
-        segments: const [
-          Segment(label: 'Buy'),
-          Segment(label: 'Sell'),
-          Segment(label: 'History'),
-        ],
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-      ),
-      SlidingSegmentedControl(
-        segments: const [
-          Segment(label: 'List', icon: Icons.view_list),
-          Segment(label: 'Grid', icon: Icons.grid_view),
-          Segment(label: 'Map', icon: Icons.map_outlined),
-        ],
-        selectedIndex: 1,
-        onSegmentChanged: (_) {},
-      ),
-      SlidingSegmentedControl(
-        segments: const [
-          Segment(label: 'Day'),
-          Segment(label: 'Week'),
-          Segment(label: 'Month'),
-          Segment(label: 'Year'),
-        ],
-        selectedIndex: 2,
-        onSegmentChanged: (_) {},
-        indicatorColor: const Color(0xFF3B82F6),
-        selectedLabelColor: const Color(0xFFFFFFFF),
-      ),
-    ]));
+    await tester.pumpWidget(
+      _canvas([
+        SlidingSegmentedControl(
+          segments: const [
+            Segment(label: 'Buy'),
+            Segment(label: 'Sell'),
+            Segment(label: 'History'),
+          ],
+          selectedIndex: 0,
+          onSegmentChanged: (_) {},
+        ),
+        SlidingSegmentedControl(
+          segments: const [
+            Segment(label: 'List', icon: Icons.view_list),
+            Segment(label: 'Grid', icon: Icons.grid_view),
+            Segment(label: 'Map', icon: Icons.map_outlined),
+          ],
+          selectedIndex: 1,
+          onSegmentChanged: (_) {},
+        ),
+        SlidingSegmentedControl(
+          segments: const [
+            Segment(label: 'Day'),
+            Segment(label: 'Week'),
+            Segment(label: 'Month'),
+            Segment(label: 'Year'),
+          ],
+          selectedIndex: 2,
+          onSegmentChanged: (_) {},
+          indicatorColor: const Color(0xFF3B82F6),
+          selectedLabelColor: const Color(0xFFFFFFFF),
+        ),
+      ]),
+    );
     await tester.pumpAndSettle();
 
     await expectLater(
@@ -106,57 +108,59 @@ void main() {
       ..devicePixelRatio = 2;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(_canvas([
-      Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: SlidingSegmentedControl(
-          sizing: SegmentSizing.intrinsic,
+    await tester.pumpWidget(
+      _canvas([
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: SlidingSegmentedControl(
+            sizing: SegmentSizing.intrinsic,
+            segments: const [
+              Segment(label: 'All'),
+              Segment(label: 'Needs attention'),
+              Segment(label: 'Done'),
+            ],
+            selectedIndex: 1,
+            onSegmentChanged: (_) {},
+          ),
+        ),
+        SlidingSegmentedControl(
+          sizing: SegmentSizing.scrollable,
           segments: const [
-            Segment(label: 'All'),
-            Segment(label: 'Needs attention'),
-            Segment(label: 'Done'),
+            Segment(label: 'Monday'),
+            Segment(label: 'Tuesday'),
+            Segment(label: 'Wednesday'),
+            Segment(label: 'Thursday'),
+            Segment(label: 'Friday'),
+            Segment(label: 'Saturday'),
           ],
-          selectedIndex: 1,
+          selectedIndex: 0,
           onSegmentChanged: (_) {},
         ),
-      ),
-      SlidingSegmentedControl(
-        sizing: SegmentSizing.scrollable,
-        segments: const [
-          Segment(label: 'Monday'),
-          Segment(label: 'Tuesday'),
-          Segment(label: 'Wednesday'),
-          Segment(label: 'Thursday'),
-          Segment(label: 'Friday'),
-          Segment(label: 'Saturday'),
-        ],
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-      ),
-      SlidingSegmentedControl(
-        segments: [
-          Segment(
-            label: 'Inbox',
-            icon: Icons.inbox_outlined,
-            badge: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: const ShapeDecoration(
-                color: Color(0xFFDCE7FF),
-                shape: StadiumBorder(),
-              ),
-              child: const Text(
-                '12',
-                style: TextStyle(fontSize: 11, color: Color(0xFF1B3A78)),
+        SlidingSegmentedControl(
+          segments: [
+            Segment(
+              label: 'Inbox',
+              icon: Icons.inbox_outlined,
+              badge: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                decoration: const ShapeDecoration(
+                  color: Color(0xFFDCE7FF),
+                  shape: StadiumBorder(),
+                ),
+                child: const Text(
+                  '12',
+                  style: TextStyle(fontSize: 11, color: Color(0xFF1B3A78)),
+                ),
               ),
             ),
-          ),
-          const Segment(label: 'Sent', icon: Icons.send_outlined),
-          const Segment(label: 'Archive', icon: Icons.archive_outlined),
-        ],
-        selectedIndex: 0,
-        onSegmentChanged: (_) {},
-      ),
-    ]));
+            const Segment(label: 'Sent', icon: Icons.send_outlined),
+            const Segment(label: 'Archive', icon: Icons.archive_outlined),
+          ],
+          selectedIndex: 0,
+          onSegmentChanged: (_) {},
+        ),
+      ]),
+    );
     await tester.pumpAndSettle();
 
     await expectLater(
@@ -171,31 +175,33 @@ void main() {
       ..devicePixelRatio = 2;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(_canvas([
-      SegmentedBody(
-        initialIndex: 1,
-        pages: [
-          SegmentPage.of(
-            label: 'Overview',
-            icon: Icons.dashboard_outlined,
-            child: const DemoPanel(title: 'Overview', body: 'Not built yet.'),
-          ),
-          SegmentPage.of(
-            label: 'Activity',
-            icon: Icons.timeline,
-            child: const DemoPanel(
-              title: 'Activity',
-              body: 'The body cross-fades as the pill slides.',
+    await tester.pumpWidget(
+      _canvas([
+        SegmentedBody(
+          initialIndex: 1,
+          pages: [
+            SegmentPage.of(
+              label: 'Overview',
+              icon: Icons.dashboard_outlined,
+              child: const DemoPanel(title: 'Overview', body: 'Not built yet.'),
             ),
-          ),
-          SegmentPage.of(
-            label: 'Settings',
-            icon: Icons.tune,
-            child: const DemoPanel(title: 'Settings', body: 'Not built yet.'),
-          ),
-        ],
-      ),
-    ]));
+            SegmentPage.of(
+              label: 'Activity',
+              icon: Icons.timeline,
+              child: const DemoPanel(
+                title: 'Activity',
+                body: 'The body cross-fades as the pill slides.',
+              ),
+            ),
+            SegmentPage.of(
+              label: 'Settings',
+              icon: Icons.tune,
+              child: const DemoPanel(title: 'Settings', body: 'Not built yet.'),
+            ),
+          ],
+        ),
+      ]),
+    );
     await tester.pumpAndSettle();
 
     await expectLater(

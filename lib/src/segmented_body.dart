@@ -52,16 +52,16 @@ class SegmentedBody extends StatefulWidget {
     this.indicatorDuration = kSegmentedControlDuration,
     this.indicatorCurve = Curves.easeInOut,
     this.semanticLabel,
-  })  : assert(pages.length > 0, 'pages must not be empty'),
-        assert(
-          initialIndex >= 0 && initialIndex < pages.length,
-          'initialIndex must be a valid index into pages',
-        ),
-        assert(
-          selectedIndex == null ||
-              (selectedIndex >= 0 && selectedIndex < pages.length),
-          'selectedIndex must be a valid index into pages',
-        );
+  }) : assert(pages.length > 0, 'pages must not be empty'),
+       assert(
+         initialIndex >= 0 && initialIndex < pages.length,
+         'initialIndex must be a valid index into pages',
+       ),
+       assert(
+         selectedIndex == null ||
+             (selectedIndex >= 0 && selectedIndex < pages.length),
+         'selectedIndex must be a valid index into pages',
+       );
 
   /// The segments and the body each one shows. Must not be empty.
   final List<SegmentPage> pages;
@@ -157,8 +157,10 @@ class _SegmentedBodyState extends State<SegmentedBody> {
   }
 
   /// The index to show: the host's while controlled, ours otherwise.
-  int get _effectiveIndex =>
-      (widget.selectedIndex ?? _selectedIndex).clamp(0, widget.pages.length - 1);
+  int get _effectiveIndex => (widget.selectedIndex ?? _selectedIndex).clamp(
+    0,
+    widget.pages.length - 1,
+  );
 
   @override
   void didUpdateWidget(SegmentedBody oldWidget) {
@@ -191,7 +193,8 @@ class _SegmentedBodyState extends State<SegmentedBody> {
     final currentKey = ValueKey<int>(index);
     final body = AnimatedSwitcher(
       duration: widget.bodyDuration,
-      transitionBuilder: widget.transitionBuilder ??
+      transitionBuilder:
+          widget.transitionBuilder ??
           widget.bodyTransition.builder(
             direction: _direction,
             currentKey: currentKey,
@@ -199,15 +202,9 @@ class _SegmentedBodyState extends State<SegmentedBody> {
           ),
       layoutBuilder: (currentChild, previousChildren) => Stack(
         alignment: Alignment.topCenter,
-        children: [
-          ...previousChildren,
-          ?currentChild,
-        ],
+        children: [...previousChildren, ?currentChild],
       ),
-      child: KeyedSubtree(
-        key: currentKey,
-        child: widget.pages[index].child,
-      ),
+      child: KeyedSubtree(key: currentKey, child: widget.pages[index].child),
     );
 
     return Column(

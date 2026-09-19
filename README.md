@@ -1,5 +1,10 @@
 # sliding_segmented_control
 
+[![pub package](https://img.shields.io/pub/v/sliding_segmented_control.svg)](https://pub.dev/packages/sliding_segmented_control)
+[![pub points](https://img.shields.io/pub/points/sliding_segmented_control)](https://pub.dev/packages/sliding_segmented_control/score)
+[![CI](https://github.com/CtrlAltDevelop/sliding_segmented_control/actions/workflows/ci.yml/badge.svg)](https://github.com/CtrlAltDevelop/sliding_segmented_control/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/CtrlAltDevelop/sliding_segmented_control/blob/main/LICENSE)
+
 A segmented control whose selection is marked by a **pill that slides** between
 segments, rather than by a highlighted button — plus `SegmentedBody`, which
 pairs the control with a body that cross-fades as the pill moves.
@@ -42,8 +47,8 @@ Or add it to `pubspec.yaml` yourself — it is a runtime dependency:
 
 ```yaml
 dependencies:
-  material_ui: ">=1.0.0 <3.0.0"
-  sliding_segmented_control: ^1.1.0
+  material_ui: ">=1.0.0 <2.0.0"
+  sliding_segmented_control: ">=1.2.0 <2.0.0"
 ```
 
 then:
@@ -51,6 +56,9 @@ then:
 ```bash
 flutter pub get
 ```
+
+Requires Flutter 3.44.0 or newer — Dart 3.12.0 — which is `material_ui`'s own
+floor.
 
 ## Use
 
