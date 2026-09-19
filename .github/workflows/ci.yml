@@ -21,7 +21,7 @@ permissions: {}
 jobs:
   package:
     name: Package
-    uses: CtrlAltDevelop/ci-workflows/.github/workflows/dart-package.yml@v1.1.0
+    uses: CtrlAltDevelop/ci-workflows/.github/workflows/dart-package.yml@v1.1.1
     permissions:
       contents: read
     with:

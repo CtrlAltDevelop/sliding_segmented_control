@@ -51,8 +51,27 @@ Widget _canvas(List<Widget> children) => MaterialApp(
   ),
 );
 
+/// The screenshots are rendered on macOS, and text and antialiasing differ
+/// byte-for-byte elsewhere, so off macOS the images are still rendered but
+/// not compared. `--update-goldens` still writes them.
+class _MacOsOnlyComparator extends LocalFileComparator {
+  _MacOsOnlyComparator(super.testFile);
+
+  @override
+  Future<bool> compare(Uint8List imageBytes, Uri golden) async =>
+      Platform.isMacOS ? super.compare(imageBytes, golden) : true;
+}
+
 void main() {
-  setUpAll(_loadFonts);
+  setUpAll(() async {
+    final current = goldenFileComparator;
+    if (current is LocalFileComparator) {
+      goldenFileComparator = _MacOsOnlyComparator(
+        current.basedir.resolve('screenshots_test.dart'),
+      );
+    }
+    await _loadFonts();
+  });
 
   testWidgets('the control, in three styles', (tester) async {
     tester.view
